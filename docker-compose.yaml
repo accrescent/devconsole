@@ -10,5 +10,6 @@ services:
       - ./nginx/dev.conf:/etc/nginx/nginx.conf
       - ./nginx/security.conf:/etc/nginx/security.conf
       - ./certs:/etc/nginx/certs
+      - ./web/static:/usr/share/nginx/html
     ports:
       - '8080:443'

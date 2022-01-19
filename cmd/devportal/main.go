@@ -24,7 +24,6 @@ func main() {
 		Sessions:   make(map[string]string),
 	}
 
-	s.Router.HandleFunc("/", s.HandleLoginPage)
 	s.Router.HandleFunc("/auth/github", s.HandleGitHubLogin)
 	s.Router.HandleFunc("/auth/github/callback", s.HandleGitHubOAuthCallback)
 	s.Router.HandleFunc("/portal", s.AuthMiddleware(s.HandlePortal))
