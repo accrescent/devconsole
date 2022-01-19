@@ -27,7 +27,7 @@ func (s *Server) HandleGitHubLogin(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   30,
 		Secure:   true,
 		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteLaxMode,
 	})
 
 	url := s.OAuth2Conf.AuthCodeURL(stateStr)
