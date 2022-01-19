@@ -1,11 +1,11 @@
-version: '3'
+version: '3.8'
 services:
   portal:
     build: .
     env_file: .env
 
   nginx:
-    image: nginx:alpine
+    image: nginx:1.20-alpine
     volumes:
       - ./nginx/dev.conf:/etc/nginx/nginx.conf
       - ./nginx/security.conf:/etc/nginx/security.conf
