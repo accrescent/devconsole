@@ -50,7 +50,7 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 		Path:     "/",
 		Secure:   true,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,
 	})
 	http.Redirect(w, r, "/portal", http.StatusFound)
 }
