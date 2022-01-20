@@ -21,7 +21,9 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 	if stateCookie.Value != state {
 		http.SetCookie(w, &http.Cookie{
 			Name:   "__Host-oauth_state",
+			Path: "/",
 			MaxAge: -1,
+			Secure: true,
 		})
 		http.Error(w, "", http.StatusUnauthorized)
 		return
