@@ -42,7 +42,14 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 	}
 	sidStr := hex.EncodeToString(sid)
 
-	s.Sessions[sidStr] = token.AccessToken
+	_, err = s.DB.Exec(
+		"INSERT INTO sessions (id, access_token) VALUES (?, ?)",
+		sidStr, token.AccessToken,
+	)
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "__Host-session",

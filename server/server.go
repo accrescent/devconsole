@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"net/http"
 
 	"golang.org/x/oauth2"
@@ -9,5 +10,5 @@ import (
 type Server struct {
 	Router     *http.ServeMux
 	OAuth2Conf oauth2.Config
-	Sessions   map[string]string
+	DB         *sql.DB
 }

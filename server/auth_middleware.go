@@ -13,8 +13,9 @@ func (s *Server) AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		token, exists := s.Sessions[sid.Value]
-		if !exists {
+		var token string
+		err = s.DB.QueryRow("SELECT access_token FROM sessions WHERE id = ?", sid.Value).Scan(&token)
+		if err != nil {
 			http.SetCookie(w, &http.Cookie{
 				Name:   "__Host-session",
 				MaxAge: -1,

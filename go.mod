@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/google/go-github/v41 v41.0.0
+	github.com/mattn/go-sqlite3 v1.14.10
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 )
 
