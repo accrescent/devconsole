@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"net/http"
+	"time"
 )
 
 func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Request) {
@@ -44,9 +45,15 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 	}
 	sidStr := hex.EncodeToString(sid)
 
+	now := time.Now()
+	_, err = s.DB.Exec("DELETE FROM sessions WHERE expiry_time < ?", now.Unix())
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
 	_, err = s.DB.Exec(
-		"INSERT INTO sessions (id, access_token) VALUES (?, ?)",
-		sidStr, token.AccessToken,
+		"INSERT INTO sessions (id, access_token, expiry_time) VALUES (?, ?, ?)",
+		sidStr, token.AccessToken, now.Add(24 * time.Hour).Unix(),
 	)
 	if err != nil {
 		http.Error(w, "", http.StatusInternalServerError)
@@ -57,6 +64,7 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 		Name:     "__Host-session",
 		Value:    sidStr,
 		Path:     "/",
+		MaxAge:   24 * 60 * 60,
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,

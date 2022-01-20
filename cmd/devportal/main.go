@@ -26,7 +26,8 @@ func main() {
 	}
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS sessions (
 		id TEXT PRIMARY KEY NOT NULL,
-		access_token TEXT NOT NULL
+		access_token TEXT NOT NULL,
+		expiry_time INT NOT NULL
 	)`)
 	if err != nil {
 		log.Fatal(err)

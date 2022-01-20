@@ -3,7 +3,10 @@ package server
 import (
 	"context"
 	"net/http"
+	"time"
 )
+
+const tokenQuery = "SELECT access_token FROM sessions WHERE id = ? AND expiry_time > ?"
 
 func (s *Server) AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +17,7 @@ func (s *Server) AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 		}
 
 		var token string
-		err = s.DB.QueryRow("SELECT access_token FROM sessions WHERE id = ?", sid.Value).Scan(&token)
+		err = s.DB.QueryRow(tokenQuery, sid.Value, time.Now().Unix()).Scan(&token)
 		if err != nil {
 			http.SetCookie(w, &http.Cookie{
 				Name:   "__Host-session",
