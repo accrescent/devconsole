@@ -41,6 +41,7 @@ func main() {
 
 	s.Router.HandleFunc("/auth/github", s.HandleGitHubLogin)
 	s.Router.HandleFunc("/auth/github/callback", s.HandleGitHubOAuthCallback)
+	s.Router.HandleFunc("/logout", s.HandleLogout)
 	s.Router.HandleFunc("/portal", s.AuthMiddleware(s.HandlePortal))
 
 	http := &http.Server{
