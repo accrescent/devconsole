@@ -22,7 +22,7 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 	if stateCookie.Value != state {
 		http.SetCookie(w, &http.Cookie{
 			Name:   "__Host-oauth_state",
-			Path: "/",
+			Path:   "/",
 			MaxAge: -1,
 			Secure: true,
 		})
@@ -53,7 +53,7 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 	}
 	_, err = s.DB.Exec(
 		"INSERT INTO sessions (id, access_token, expiry_time) VALUES (?, ?, ?)",
-		sidStr, token.AccessToken, now.Add(24 * time.Hour).Unix(),
+		sidStr, token.AccessToken, now.Add(24*time.Hour).Unix(),
 	)
 	if err != nil {
 		http.Error(w, "", http.StatusInternalServerError)

@@ -21,7 +21,7 @@ func (s *Server) AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 		if err != nil {
 			http.SetCookie(w, &http.Cookie{
 				Name:   "__Host-session",
-				Path: "/",
+				Path:   "/",
 				MaxAge: -1,
 				Secure: true,
 			})
