@@ -10,12 +10,12 @@ document.getElementById("register_form").onsubmit = event => {
     }).then(resp => {
         if (!resp.ok) {
             if (resp.status === 409) {
-                console.log("GitHub user already registered")
+                console.log("GitHub user already registered");
             }
             return Promise.reject();
         }
         location.replace("/portal");
     }).catch(err => {
-        console.log(err)
+        console.log(err);
     });
 };

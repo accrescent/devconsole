@@ -5,6 +5,6 @@ document.getElementById("logout_button").onclick = () => {
         }
         location.replace("/");
     }).catch(err => {
-        console.log(err)
+        console.log(err);
     });
 };
