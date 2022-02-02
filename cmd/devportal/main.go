@@ -26,25 +26,25 @@ func main() {
 		log.Fatal(err)
 	}
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS sessions (
-		id TEXT PRIMARY KEY NOT NULL,
+		id TEXT PRIMARY KEY,
 		gh_id TEXT NOT NULL,
 		access_token TEXT NOT NULL,
 		expiry_time INT NOT NULL
-	)`)
+	) STRICT`)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
-		gh_id TEXT PRIMARY KEY NOT NULL,
+		gh_id TEXT PRIMARY KEY,
 		email TEXT NOT NULL
-	)`); err != nil {
+	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS valid_email_cache (
 		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
 		email TEXT NOT NULL,
 		PRIMARY KEY (session_id, email)
-	)`); err != nil {
+	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
 
