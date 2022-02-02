@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-const tokenQuery = "SELECT access_token FROM sessions WHERE id = ? AND expiry_time > ?"
-
 func (s *Server) AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sid, err := r.Cookie("__Host-session")
@@ -16,9 +14,15 @@ func (s *Server) AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		var token string
-		err = s.DB.QueryRow(tokenQuery, sid.Value, time.Now().Unix()).Scan(&token)
-		if err != nil {
+		var exists bool
+		if err = s.DB.QueryRow(
+			"SELECT EXISTS (SELECT 1 FROM sessions WHERE id = ? AND expiry_time > ?)",
+			sid.Value, time.Now().Unix(),
+		).Scan(&exists); err != nil {
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+		if !exists {
 			http.SetCookie(w, &http.Cookie{
 				Name:   "__Host-session",
 				Path:   "/",
@@ -29,7 +33,7 @@ func (s *Server) AuthMiddleware(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "token", token)
+		ctx := context.WithValue(r.Context(), "sid", sid.Value)
 
 		h(w, r.WithContext(ctx))
 	}

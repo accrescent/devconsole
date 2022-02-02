@@ -5,6 +5,10 @@ import (
 	"encoding/hex"
 	"net/http"
 	"time"
+
+	"golang.org/x/oauth2"
+
+	"github.com/google/go-github/v41/github"
 )
 
 func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Request) {
@@ -30,8 +34,20 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	ctx := r.Context()
+
 	code := r.FormValue("code")
-	token, err := s.OAuth2Conf.Exchange(r.Context(), code)
+	token, err := s.OAuth2Conf.Exchange(ctx, code)
+	if err != nil {
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token.AccessToken})
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	user, _, err := client.Users.Get(ctx, "")
 	if err != nil {
 		http.Error(w, "", http.StatusUnauthorized)
 		return
@@ -52,8 +68,8 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	_, err = s.DB.Exec(
-		"INSERT INTO sessions (id, access_token, expiry_time) VALUES (?, ?, ?)",
-		sidStr, token.AccessToken, now.Add(24*time.Hour).Unix(),
+		"INSERT INTO sessions (id, gh_id, access_token, expiry_time) VALUES (?, ?, ?, ?)",
+		sidStr, user.ID, token.AccessToken, now.Add(24*time.Hour).Unix(),
 	)
 	if err != nil {
 		http.Error(w, "", http.StatusInternalServerError)
@@ -69,5 +85,16 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	})
-	http.Redirect(w, r, "/portal", http.StatusFound)
+
+	var registered bool
+	err = s.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE gh_id = ?)", user.ID).Scan(&registered)
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+	if registered {
+		http.Redirect(w, r, "/portal", http.StatusFound)
+	} else {
+		http.Redirect(w, r, "/register", http.StatusFound)
+	}
 }
