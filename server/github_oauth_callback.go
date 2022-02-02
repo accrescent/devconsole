@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/google/go-github/v41/github"
+	"github.com/google/go-github/v42/github"
 )
 
 func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Request) {
