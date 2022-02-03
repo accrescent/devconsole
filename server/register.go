@@ -6,11 +6,10 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
-
-	"golang.org/x/oauth2"
 
 	"github.com/google/go-github/v42/github"
+
+	"github.com/accrescent/devportal/dbutil"
 )
 
 var regTmpl = template.Must(template.New("register.html").ParseFiles("web/templates/register.html"))
@@ -28,20 +27,8 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	sid := ctx.Value("sid")
 
-	var ghId string
-	if err := s.DB.QueryRow(
-		"SELECT gh_id FROM sessions WHERE id = ?",
-		sid,
-	).Scan(&ghId); err != nil {
-		http.Error(w, "", http.StatusInternalServerError)
-		return
-	}
-
-	var registered bool
-	if err := s.DB.QueryRow(
-		"SELECT EXISTS (SELECT 1 FROM users WHERE gh_id = ?)",
-		ghId,
-	).Scan(&registered); err != nil {
+	registered, err := dbutil.IsUserRegistered(s.DB, sid.(string))
+	if err != nil {
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
@@ -50,11 +37,7 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/portal", http.StatusFound)
 	}
 
-	var token string
-	err := s.DB.QueryRow(
-		"SELECT access_token FROM sessions WHERE id = ? AND expiry_time > ?",
-		sid, time.Now().Unix(),
-	).Scan(&token)
+	client, err := dbutil.CreateGitHubClient(s.DB, sid.(string), ctx)
 	switch {
 	case err == sql.ErrNoRows:
 		http.SetCookie(w, &http.Cookie{
@@ -69,10 +52,6 @@ func (s *Server) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
-
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
 
 	user, _, err := client.Users.Get(ctx, "")
 	if err != nil {

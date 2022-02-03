@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/accrescent/devportal/dbutil"
 )
 
 func (s *Server) HandleRegisterNew(w http.ResponseWriter, r *http.Request) {
@@ -40,11 +42,8 @@ func (s *Server) HandleRegisterNew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var ghId string
-	if err := s.DB.QueryRow(
-		"SELECT gh_id FROM sessions WHERE id = ?",
-		sid,
-	).Scan(&ghId); err != nil {
+	ghId, err := dbutil.GetUserID(s.DB, sid.(string))
+	if err != nil {
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}

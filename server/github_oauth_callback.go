@@ -9,6 +9,8 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/google/go-github/v42/github"
+
+	"github.com/accrescent/devportal/dbutil"
 )
 
 func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Request) {
@@ -86,8 +88,7 @@ func (s *Server) HandleGitHubOAuthCallback(w http.ResponseWriter, r *http.Reques
 		SameSite: http.SameSiteLaxMode,
 	})
 
-	var registered bool
-	err = s.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE gh_id = ?)", user.ID).Scan(&registered)
+	registered, err := dbutil.IsUserRegistered(s.DB, sidStr)
 	if err != nil {
 		http.Error(w, "", http.StatusInternalServerError)
 		return
