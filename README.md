@@ -4,8 +4,8 @@ The Accrescent developer portal - a web application for developers to upload and
 manage their apps in the Accrescent app repository.
 
 **Note: Accrescent is not yet ready for production usage. Consider all software
-and services run by this organization as in an "alpha" stage and fit only for
-testing and development.**
+and services run by this organization as in a "pre-alpha" stage and fit only for
+development and preliminary testing.**
 
 ## Development/testing
 
