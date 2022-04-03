@@ -1,6 +1,6 @@
 module github.com/accrescent/devportal
 
-go 1.17
+go 1.18
 
 require (
 	github.com/google/go-github/v42 v42.0.0
