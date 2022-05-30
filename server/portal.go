@@ -8,7 +8,7 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"github.com/google/go-github/v42/github"
+	"github.com/google/go-github/v45/github"
 )
 
 var portalTmpl = template.Must(template.New("portal.html").ParseFiles("web/templates/portal.html"))
