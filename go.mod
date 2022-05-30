@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/google/go-github/v45 v45.0.0
-	github.com/mattn/go-sqlite3 v1.14.10
+	github.com/mattn/go-sqlite3 v1.14.13
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 )
 
