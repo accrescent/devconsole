@@ -3,7 +3,7 @@ module github.com/accrescent/devportal
 go 1.18
 
 require (
-	github.com/google/go-github/v45 v45.1.0
+	github.com/google/go-github/v45 v45.2.0
 	github.com/mattn/go-sqlite3 v1.14.13
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 )
