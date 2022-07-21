@@ -10,10 +10,10 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/endpoints"
 
+	"github.com/accrescent/devportal/api"
 	"github.com/accrescent/devportal/auth"
 	"github.com/accrescent/devportal/middleware"
 	"github.com/accrescent/devportal/page"
-	"github.com/accrescent/devportal/routes"
 )
 
 func main() {
@@ -68,8 +68,8 @@ func main() {
 	auth := r.Group("/", middleware.AuthRequired())
 	auth.GET("/register", page.Register)
 	auth.GET("/portal", page.Portal)
-	auth.POST("/register", routes.Register)
-	auth.POST("/logout", routes.Logout)
+	auth.POST("/api/register", api.Register)
+	auth.POST("/api/logout", api.Logout)
 
 	err = r.Run()
 	if err != nil {

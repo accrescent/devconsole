@@ -1,5 +1,5 @@
 document.getElementById("logout_button").onclick = () => {
-    fetch("/logout", { method: "POST", mode: "same-origin" }).then(resp => {
+    fetch("/api/logout", { method: "POST", mode: "same-origin" }).then(resp => {
         if (!resp.ok) {
             return Promise.reject();
         }
