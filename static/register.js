@@ -3,7 +3,7 @@ document.getElementById("register_form").onsubmit = event => {
 
     let selectedEmail = document.querySelector("input[name='email']:checked").value;
 
-    fetch("/register/new", {
+    fetch("/register", {
         method: "POST",
         mode: "same-origin",
         body: JSON.stringify({email: selectedEmail}),

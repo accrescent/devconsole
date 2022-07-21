@@ -13,16 +13,15 @@
         <script
             src="/register.js"
             type="module"
-            integrity="sha256-nBSDQmJJYXgOXF71Hw1Yinnu8pZ6qrmC7GzsFE5mtMI=">
+            integrity="sha256-wdHFa6+rpwY6lFNhTaRomYxi0g2B5atst5IwSqCOnFw=">
         </script>
     </head>
     <body>
-        <h1>Hello {{ .Username }}</h1>
         <h2>Sign up</h2>
         <h4>Choose your preferred email</h4>
 
         <form id="register_form">
-            {{range $i, $email := .Emails}}
+            {{range $i, $email := .emails}}
             <input
                 type="radio"
                 id="{{$i}}"

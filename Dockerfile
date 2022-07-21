@@ -11,7 +11,7 @@ RUN go install github.com/mattn/go-sqlite3
 
 COPY . .
 
-RUN go build -o /devportal cmd/devportal/main.go
+RUN go build -o /devportal
 
 EXPOSE 8080
 
