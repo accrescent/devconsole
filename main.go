@@ -53,7 +53,7 @@ func main() {
 		ClientID:     os.Getenv("GH_CLIENT_ID"),
 		ClientSecret: os.Getenv("GH_CLIENT_SECRET"),
 		Endpoint:     endpoints.GitHub,
-		RedirectURL:  "https://localhost:8080/auth/github/callback",
+		RedirectURL:  os.Getenv("OAUTH2_REDIRECT_URL"),
 		Scopes:       []string{"user:email"},
 	}
 
