@@ -15,7 +15,5 @@ document.getElementById("register_form").onsubmit = event => {
             return Promise.reject();
         }
         location.replace("/portal");
-    }).catch(err => {
-        console.log(err);
-    });
+    }).catch(console.error);
 };

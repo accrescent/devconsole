@@ -4,7 +4,5 @@ document.getElementById("logout_button").onclick = () => {
             return Promise.reject();
         }
         location.replace("/");
-    }).catch(err => {
-        console.log(err);
-    });
+    }).catch(console.error);
 };
