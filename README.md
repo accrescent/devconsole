@@ -17,6 +17,7 @@ these steps:
    authorization callback URL to `https://localhost:8080/auth/github/callback`.
 2. Generate a new client secret and store it in `.env` as `GH_CLIENT_SECRET` at
    the root of the repository. Store the app's client ID as `GH_CLIENT_ID`.
+   Store the authorization callback URL as `OAUTH2_REDIRECT_URL`.
 4. Generate a TLS certificate & key and store them as `certs/cert.pem` &
    `certs/key.pem` respectively.
 5. Start the application by running `docker-compose up`
