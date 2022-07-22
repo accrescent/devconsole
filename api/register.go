@@ -49,7 +49,11 @@ func Register(c *gin.Context) {
 		"SELECT gh_id FROM sessions WHERE id = ?",
 		sessionID,
 	).Scan(&ghID); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		if errors.Is(err, sql.ErrNoRows) {
+			_ = c.AbortWithError(http.StatusUnauthorized, err)
+		} else {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+		}
 		return
 	}
 
