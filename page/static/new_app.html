@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Accrescent Dev Portal | New App</title>
+        <script
+            src="/main.js"
+            type="module"
+            integrity="sha256-eZKV1JwvV599OyLjSZuYVeumvPYH4do0vojw+DBBcGs=">
+        </script>
+        <script
+            src="/new_app.js"
+            type="module"
+            integrity="sha256-c5ptvQe265j74fCg8SiIBdexrcTLd3YlN8cz+aG9uME=">
+        </script>
+    </head>
+    <body>
+        <h1>Upload new app</h1>
+
+        <form id="new_app_form">
+            APK set: <input type="file" name="file"><br><br>
+            <button name="submit">Upload</button>
+        </form>
+
+        <div id="app_info" hidden>
+            <h2>Is this correct?</h2>
+
+            <p id="id"></p>
+            <p id="label"></p>
+            <p id="version_name"></p>
+            <p id="version_code"></p>
+
+            <button id="submit">Submit new app</button><br><br>
+        </div>
+
+        <button id="logout_button">Log out</button>
+    </body>
+</html>

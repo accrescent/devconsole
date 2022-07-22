@@ -48,6 +48,29 @@ func main() {
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS valid_apps (
+		gh_id TEXT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
+		upload_key TEXT NOT NULL,
+		path TEXT NOT NULL,
+		id TEXT NOT NULL UNIQUE,
+		label TEXT NOT NULL,
+		version_code INT NOT NULL,
+		version_name TEXT NOT NULL,
+		PRIMARY KEY (gh_id, upload_key)
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_apps (
+		gh_id TEXT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
+		path TEXT NOT NULL,
+		id TEXT NOT NULL UNIQUE,
+		label TEXT NOT NULL,
+		version_code INT NOT NULL,
+		version_name TEXT NOT NULL,
+		PRIMARY KEY (gh_id, id)
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
 
 	oauth2Conf := &oauth2.Config{
 		ClientID:     os.Getenv("GH_CLIENT_ID"),
@@ -68,8 +91,11 @@ func main() {
 	auth := r.Group("/", middleware.AuthRequired())
 	auth.GET("/register", page.Register)
 	auth.GET("/portal", page.Portal)
+	auth.StaticFile("/apps/new", "./page/static/new_app.html")
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.Logout)
+	auth.POST("/api/apps", api.NewApp)
+	auth.PATCH("/api/apps", api.SubmitApp)
 
 	err = r.Run()
 	if err != nil {
