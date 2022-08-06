@@ -102,7 +102,7 @@ func NewApp(c *gin.Context) {
 	}
 
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie("__Host-staging_app_id", m.Package, 5*60, "/", "", true, true) // Max-Age 5 min
+	c.SetCookie(stagingAppIDCookie, m.Package, 5*60, "/", "", true, true) // Max-Age 5 min
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id":           m.Package,

@@ -12,7 +12,7 @@ import (
 func SubmitApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	sessionID := c.MustGet("session_id").(string)
-	stagingAppID, err := c.Cookie("__Host-staging_app_id")
+	stagingAppID, err := c.Cookie(stagingAppIDCookie)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
