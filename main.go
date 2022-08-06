@@ -29,14 +29,14 @@ func main() {
 	}
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS sessions (
 		id TEXT PRIMARY KEY,
-		gh_id TEXT NOT NULL,
+		gh_id INT NOT NULL,
 		access_token TEXT NOT NULL,
 		expiry_time INT NOT NULL
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
-		gh_id TEXT PRIMARY KEY,
+		gh_id INT PRIMARY KEY,
 		email TEXT NOT NULL
 	) STRICT`); err != nil {
 		log.Fatal(err)
@@ -58,7 +58,7 @@ func main() {
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS approved_apps (
 		id TEXT PRIMARY KEY,
-		gh_id TEXT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
+		gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
 		path TEXT NOT NULL
 	) STRICT`); err != nil {
 		log.Fatal(err)
