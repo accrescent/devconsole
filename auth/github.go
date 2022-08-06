@@ -108,11 +108,7 @@ func GitHubCallback(c *gin.Context) {
 		"SELECT EXISTS (SELECT 1 FROM users WHERE gh_id = ?)",
 		user.ID,
 	).Scan(&registered); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			_ = c.AbortWithError(http.StatusNotFound, err)
-		} else {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-		}
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	if registered {
