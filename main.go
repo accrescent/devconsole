@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 
 	"github.com/accrescent/devportal/api"
 	"github.com/accrescent/devportal/auth"
+	"github.com/accrescent/devportal/config"
 	"github.com/accrescent/devportal/middleware"
 	"github.com/accrescent/devportal/page"
 )
@@ -78,10 +80,19 @@ func main() {
 		Scopes:       []string{"user:email"},
 	}
 
+	signerGitHubID, err := strconv.ParseInt(os.Getenv("SIGNER_GH_ID"), 10, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+	conf := &config.Config{
+		SignerGitHubID: signerGitHubID,
+	}
+
 	r.LoadHTMLGlob("page/templates/*.html")
 
 	r.Use(middleware.DB(db))
 	r.Use(middleware.OAuth2Config(oauth2Conf))
+	r.Use(middleware.Config(conf))
 
 	r.GET("/auth/github", auth.GitHub)
 	r.GET("/auth/github/callback", auth.GitHubCallback)
