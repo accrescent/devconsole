@@ -90,7 +90,7 @@ func NewApp(c *gin.Context) {
 	m := apk.Manifest()
 
 	if _, err := db.Exec(
-		"INSERT INTO staging_apps (id, session_id, path) VALUES (?, ?, ?)",
+		"REPLACE INTO staging_apps (id, session_id, path) VALUES (?, ?, ?)",
 		m.Package, sessionID, filename,
 	); err != nil {
 		if errors.Is(err, sqlite3.ErrConstraintUnique) {
