@@ -3,6 +3,7 @@ module github.com/accrescent/devportal
 go 1.19
 
 require (
+	github.com/accrescent/apkstat v0.1.1
 	github.com/gin-gonic/gin v1.8.1
 	github.com/google/go-github/v45 v45.2.0
 	github.com/mattn/go-sqlite3 v1.14.14
@@ -10,7 +11,6 @@ require (
 )
 
 require (
-	github.com/accrescent/apkstat v0.1.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
