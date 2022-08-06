@@ -14,6 +14,6 @@ document.getElementById("register_form").onsubmit = event => {
             }
             return Promise.reject();
         }
-        location.replace("/portal");
+        location.replace("/dashboard");
     }).catch(console.error);
 };

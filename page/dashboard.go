@@ -7,7 +7,7 @@ import (
 	"github.com/google/go-github/v45/github"
 )
 
-func Portal(c *gin.Context) {
+func Dashboard(c *gin.Context) {
 	client := c.MustGet("gh_client").(*github.Client)
 
 	user, _, err := client.Users.Get(c, "")
@@ -16,7 +16,7 @@ func Portal(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "portal.html", gin.H{
+	c.HTML(http.StatusOK, "dashboard.html", gin.H{
 		"username": user.Login,
 	})
 }

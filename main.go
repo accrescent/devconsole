@@ -82,7 +82,7 @@ func main() {
 
 	auth := r.Group("/", middleware.AuthRequired())
 	auth.GET("/register", page.Register)
-	auth.GET("/portal", page.Portal)
+	auth.GET("/dashboard", page.Dashboard)
 	auth.StaticFile("/apps/new", "./page/static/new_app.html")
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.Logout)
