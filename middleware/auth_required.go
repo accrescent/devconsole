@@ -20,7 +20,9 @@ func AuthRequired() gin.HandlerFunc {
 
 		sessionID, err := c.Cookie(auth.SessionCookie)
 		if err != nil {
-			_ = c.AbortWithError(http.StatusUnauthorized, err)
+			c.Abort()
+			_ = c.Error(err)
+			c.Redirect(http.StatusFound, "/")
 			return
 		}
 
@@ -30,7 +32,9 @@ func AuthRequired() gin.HandlerFunc {
 			sessionID, time.Now().Unix(),
 		).Scan(&token); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				_ = c.AbortWithError(http.StatusForbidden, err)
+				c.Abort()
+				_ = c.Error(err)
+				c.Redirect(http.StatusFound, "/")
 			} else {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
 			}
