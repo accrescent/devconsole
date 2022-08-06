@@ -1,9 +1,15 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"errors"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -89,8 +95,25 @@ func main() {
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps", api.SubmitApp)
 
-	err = r.Run()
-	if err != nil {
-		log.Fatal(err)
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: r,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && errors.Is(http.ErrServerClosed, err) {
+			log.Println(err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Shutting down forcefully:", err)
 	}
 }
