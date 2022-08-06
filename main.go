@@ -48,26 +48,18 @@ func main() {
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS valid_apps (
-		gh_id TEXT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
-		upload_key TEXT NOT NULL,
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_apps (
+		id TEXT NOT NULL,
+		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
 		path TEXT NOT NULL,
-		id TEXT NOT NULL UNIQUE,
-		label TEXT NOT NULL,
-		version_code INT NOT NULL,
-		version_name TEXT NOT NULL,
-		PRIMARY KEY (gh_id, upload_key)
+		PRIMARY KEY (id, session_id)
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_apps (
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS approved_apps (
+		id TEXT PRIMARY KEY,
 		gh_id TEXT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
-		path TEXT NOT NULL,
-		id TEXT NOT NULL UNIQUE,
-		label TEXT NOT NULL,
-		version_code INT NOT NULL,
-		version_name TEXT NOT NULL,
-		PRIMARY KEY (gh_id, id)
+		path TEXT NOT NULL
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}

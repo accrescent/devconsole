@@ -6,44 +6,19 @@ import (
 	"database/sql"
 	"errors"
 	"io"
-	"io/fs"
-	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
+	"time"
 
 	"github.com/accrescent/apkstat"
 	"github.com/gin-gonic/gin"
+	"github.com/mattn/go-sqlite3"
 )
 
 func NewApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	sessionID := c.MustGet("session_id").(string)
-
-	var ghID string
-	if err := db.QueryRow(
-		"SELECT gh_id FROM sessions WHERE id = ?",
-		sessionID,
-	).Scan(&ghID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			_ = c.AbortWithError(http.StatusUnauthorized, err)
-		} else {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-		}
-		return
-	}
-
-	preParsedDir := filepath.Join("pre_parsed", ghID)
-	if err := os.MkdirAll(preParsedDir, 0500); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	preParsedDir, err := os.MkdirTemp(preParsedDir, "")
-	if err != nil && !errors.Is(err, fs.ErrExist) {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -51,19 +26,44 @@ func NewApp(c *gin.Context) {
 		return
 	}
 
-	// file.Filename shouldn't be trusted, so we strip all path separators before saving. See
-	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition#directives
-	// and https://github.com/gin-gonic/gin/issues/1693.
-	filename := filepath.Base(file.Filename)
-	upload := filepath.Join(preParsedDir, filename)
-	defer os.Remove(upload)
-	if err := c.SaveUploadedFile(file, upload); err != nil {
+	dir, err := os.MkdirTemp("/", "")
+	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
+	filename := filepath.Join(dir, "app.apks")
+	if err := c.SaveUploadedFile(file, filename); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	// Delete app after 5 minutes if not submitted
+	cCp := c.Copy()
+	go func() {
+		time.Sleep(5 * time.Minute)
+
+		var unsubmitted bool
+		if err := db.QueryRow(
+			"SELECT EXISTS (SELECT 1 FROM staging_apps WHERE session_id = ? AND path = ?)",
+			sessionID, filename,
+		).Scan(&unsubmitted); err != nil {
+			_ = cCp.Error(err)
+			return
+		}
+
+		if unsubmitted {
+			if _, err := db.Exec(
+				"DELETE FROM staging_apps WHERE session_id = ? AND path = ?",
+				sessionID, filename,
+			); err != nil {
+				_ = cCp.Error(err)
+			}
+			os.RemoveAll(dir)
+		}
+	}()
+
 	// We've received the (supposed) APK set. Now extract the app metadata.
-	apkSet, err := zip.OpenReader(upload)
+	apkSet, err := zip.OpenReader(filename)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -87,38 +87,22 @@ func NewApp(c *gin.Context) {
 		return
 	}
 
-	uploadKey := strconv.FormatUint(rand.Uint64(), 16)
-	validDir := filepath.Join("valid", ghID, uploadKey)
-	if err := os.MkdirAll(validDir, 0500); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	validPath := filepath.Join(validDir, filename)
-	if err := os.Rename(upload, validPath); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	if err := os.RemoveAll(preParsedDir); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
 	m := apk.Manifest()
 
 	if _, err := db.Exec(
-		`INSERT INTO valid_apps (
-			gh_id, upload_key, path, id,
-			label, version_code, version_name
-		) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		ghID, uploadKey, validPath, m.Package,
-		m.Application.Label, m.VersionCode, m.VersionName,
+		"INSERT INTO staging_apps (id, session_id, path) VALUES (?, ?, ?)",
+		m.Package, sessionID, filename,
 	); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		if errors.Is(err, sqlite3.ErrConstraintUnique) {
+			_ = c.AbortWithError(http.StatusConflict, err)
+		} else {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+		}
 		return
 	}
 
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie("__Host-upload_key", uploadKey, 5*60, "/", "", true, true) // Max-Age 5 min
+	c.SetCookie("__Host-staging_app_id", m.Package, 5*60, "/", "", true, true) // Max-Age 5 min
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id":           m.Package,
