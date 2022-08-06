@@ -117,6 +117,7 @@ func NewApp(c *gin.Context) {
 		return
 	}
 
+	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie("__Host-upload_key", uploadKey, 5*60, "/", "", true, true) // Max-Age 5 min
 
 	c.JSON(http.StatusCreated, gin.H{
