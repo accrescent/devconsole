@@ -14,6 +14,8 @@ import (
 	"github.com/accrescent/apkstat"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
+
+	"github.com/accrescent/devportal/quality"
 )
 
 func NewApp(c *gin.Context) {
@@ -84,6 +86,12 @@ func NewApp(c *gin.Context) {
 	apk, err := apk.FromReader(bytes.NewReader(baseAPK), int64(len(baseAPK)))
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	// Run tests whose failures warrant immediate rejection
+	if err := quality.RunRejectTests(apk, quality.NewApp); err != nil {
+		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
