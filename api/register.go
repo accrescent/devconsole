@@ -44,7 +44,7 @@ func Register(c *gin.Context) {
 	}
 
 	// Register user
-	var ghID string
+	var ghID int
 	if err := db.QueryRow(
 		"SELECT gh_id FROM sessions WHERE id = ?",
 		sessionID,

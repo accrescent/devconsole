@@ -14,7 +14,7 @@ func PublishApp(c *gin.Context) {
 	sessionID := c.MustGet("session_id").(string)
 	appID := c.Param("appID")
 
-	var ghID string
+	var ghID int
 	if err := db.QueryRow(
 		"SELECT gh_id FROM sessions WHERE id = ?",
 		sessionID,
