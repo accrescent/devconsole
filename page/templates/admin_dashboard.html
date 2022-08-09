@@ -8,6 +8,11 @@
             type="module"
             integrity="sha256-eZKV1JwvV599OyLjSZuYVeumvPYH4do0vojw+DBBcGs=">
         </script>
+        <script
+            src="/admin_dashboard.js"
+            type="module"
+            integrity="sha256-RjEiEJjtsgZpFqOySA7dmxP+qx7OgzxkQUzD0fWDPuA=">
+        </script>
     </head>
     <body>
         <h1>Welcome {{ .username }}</h1>
@@ -17,7 +22,7 @@
         <h3>Apps pending metadata signature</h3>
         <ul>
             {{range .pending_apps}}
-            <li>{{ . }}</li>
+            <li>{{ . }}<button type="button" name="app_id" value="{{ . }}">Publish</button></li>
             {{else}}
             <p>No pending apps</p>
             {{end}}

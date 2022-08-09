@@ -71,6 +71,18 @@ func main() {
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS app_teams (
+		id TEXT PRIMARY KEY
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS app_team_users (
+		app_id TEXT NOT NULL REFERENCES app_teams(id) ON DELETE CASCADE,
+		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
+		PRIMARY KEY (app_id, user_gh_id)
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
 
 	oauth2Conf := &oauth2.Config{
 		ClientID:     os.Getenv("GH_CLIENT_ID"),
@@ -105,6 +117,7 @@ func main() {
 	auth.POST("/api/logout", api.Logout)
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps", api.SubmitApp)
+	auth.POST("/api/apps/:appID", middleware.SignerRequired(), api.PublishApp)
 
 	srv := &http.Server{
 		Addr:    ":8080",
