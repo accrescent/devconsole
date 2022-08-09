@@ -100,7 +100,7 @@ func GitHubCallback(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie(SessionCookie, sidStr, 24*60*60, "/", "", true, true) // Max-Age 1 day
 
 	var registered bool
@@ -112,8 +112,8 @@ func GitHubCallback(c *gin.Context) {
 		return
 	}
 	if registered {
-		c.Redirect(http.StatusFound, "/dashboard")
+		c.Redirect(http.StatusFound, "/auth/redirect/dashboard")
 	} else {
-		c.Redirect(http.StatusFound, "/register")
+		c.Redirect(http.StatusFound, "/auth/redirect/register")
 	}
 }

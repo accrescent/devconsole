@@ -108,6 +108,8 @@ func main() {
 
 	r.GET("/auth/github", auth.GitHub)
 	r.GET("/auth/github/callback", auth.GitHubCallback)
+	r.StaticFile("/auth/redirect/register", "./page/static/redirect_register.html")
+	r.StaticFile("/auth/redirect/dashboard", "./page/static/redirect_dashboard.html")
 
 	auth := r.Group("/", middleware.AuthRequired())
 	auth.GET("/register", page.Register)

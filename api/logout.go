@@ -18,7 +18,7 @@ func Logout(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie(auth.SessionCookie, "", -1, "/", "", true, true)
 
 	c.String(http.StatusOK, "")
