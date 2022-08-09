@@ -11,6 +11,7 @@ import (
 func Register(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	sessionID := c.MustGet("session_id").(string)
+	ghID := c.MustGet("gh_id").(int)
 
 	var input struct {
 		Email string `json:"email" binding:"required"`
@@ -44,19 +45,6 @@ func Register(c *gin.Context) {
 	}
 
 	// Register user
-	var ghID int
-	if err := db.QueryRow(
-		"SELECT gh_id FROM sessions WHERE id = ?",
-		sessionID,
-	).Scan(&ghID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			_ = c.AbortWithError(http.StatusUnauthorized, err)
-		} else {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-		}
-		return
-	}
-
 	res, err := db.Exec(
 		"INSERT INTO users (gh_id, email) VALUES (?, ?)",
 		ghID, input.Email,

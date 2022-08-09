@@ -41,10 +41,24 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
+		var ghID int
+		if err := db.QueryRow(
+			"SELECT gh_id FROM sessions WHERE id = ?",
+			sessionID,
+		).Scan(&ghID); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				_ = c.AbortWithError(http.StatusUnauthorized, err)
+			} else {
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
+			}
+			return
+		}
+
 		httpClient := conf.Client(c, &oauth2.Token{AccessToken: token})
 		client := github.NewClient(httpClient)
 
 		c.Set("session_id", sessionID)
+		c.Set("gh_id", ghID)
 		c.Set("gh_client", client)
 	}
 }

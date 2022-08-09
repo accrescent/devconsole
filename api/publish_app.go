@@ -11,21 +11,8 @@ import (
 
 func PublishApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	sessionID := c.MustGet("session_id").(string)
+	ghID := c.MustGet("gh_id").(int)
 	appID := c.Param("appID")
-
-	var ghID int
-	if err := db.QueryRow(
-		"SELECT gh_id FROM sessions WHERE id = ?",
-		sessionID,
-	).Scan(&ghID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			_ = c.AbortWithError(http.StatusUnauthorized, err)
-		} else {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-		}
-		return
-	}
 
 	if _, err := db.Exec("INSERT INTO app_teams (id) VALUES (?)", appID); err != nil {
 		if errors.Is(err, sqlite3.ErrConstraintUnique) {
