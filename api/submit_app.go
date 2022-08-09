@@ -31,7 +31,13 @@ func SubmitApp(c *gin.Context) {
 		}
 		return
 	}
-	if _, err := db.Exec(
+
+	tx, err := db.Begin()
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if _, err := tx.Exec(
 		"INSERT INTO approved_apps (id, gh_id, path) VALUES (?, ?, ?)",
 		stagingAppID, ghID, path,
 	); err != nil {
@@ -40,12 +46,22 @@ func SubmitApp(c *gin.Context) {
 		} else {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 		}
+		if err := tx.Rollback(); err != nil {
+			_ = c.Error(err)
+		}
 		return
 	}
-	if _, err := db.Exec(
+	if _, err := tx.Exec(
 		"DELETE FROM staging_apps WHERE id = ? AND session_id = ?",
 		stagingAppID, sessionID,
 	); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		if err := tx.Rollback(); err != nil {
+			_ = c.Error(err)
+		}
+		return
+	}
+	if err := tx.Commit(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
