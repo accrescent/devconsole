@@ -41,7 +41,7 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
-		var ghID int
+		var ghID int64
 		if err := db.QueryRow(
 			"SELECT gh_id FROM sessions WHERE id = ?",
 			sessionID,

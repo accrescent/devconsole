@@ -11,7 +11,7 @@ import (
 func Register(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	sessionID := c.MustGet("session_id").(string)
-	ghID := c.MustGet("gh_id").(int)
+	ghID := c.MustGet("gh_id").(int64)
 
 	var input struct {
 		Email string `json:"email" binding:"required"`

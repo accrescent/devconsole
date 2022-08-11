@@ -11,7 +11,7 @@ import (
 
 func PublishApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	ghID := c.MustGet("gh_id").(int)
+	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("appID")
 
 	tx, err := db.Begin()
