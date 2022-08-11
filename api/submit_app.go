@@ -41,7 +41,7 @@ func SubmitApp(c *gin.Context) {
 		"INSERT INTO approved_apps (id, gh_id, path) VALUES (?, ?, ?)",
 		stagingAppID, ghID, path,
 	); err != nil {
-		if errors.Is(err, sqlite3.ErrConstraintUnique) {
+		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
 			_ = c.AbortWithError(http.StatusConflict, err)
 		} else {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
