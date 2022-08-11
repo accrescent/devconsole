@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"database/sql"
-	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -13,7 +12,6 @@ import (
 
 	"github.com/accrescent/apkstat"
 	"github.com/gin-gonic/gin"
-	"github.com/mattn/go-sqlite3"
 
 	"github.com/accrescent/devportal/quality"
 )
@@ -101,11 +99,7 @@ func NewApp(c *gin.Context) {
 		"REPLACE INTO staging_apps (id, session_id, path) VALUES (?, ?, ?)",
 		m.Package, sessionID, filename,
 	); err != nil {
-		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
-			_ = c.AbortWithError(http.StatusConflict, err)
-		} else {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-		}
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
