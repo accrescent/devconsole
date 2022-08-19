@@ -53,7 +53,7 @@ document.getElementById("new_app_form").onsubmit = event => {
 };
 
 document.getElementById("submit").onclick = () => {
-    fetch("/api/apps", { method: "PATCH", mode: "same-origin", }).then(resp => {
+    fetch("/api/apps", { method: "PATCH", mode: "same-origin" }).then(resp => {
         if (!resp.ok) {
             return Promise.reject();
         }
