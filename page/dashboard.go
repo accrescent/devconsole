@@ -25,8 +25,7 @@ func Dashboard(c *gin.Context) {
 	if *user.ID == conf.SignerGitHubID {
 		isSigner = true
 	}
-
-	var appIDs []string
+	var sigAppIDs []string
 	if isSigner {
 		// Only display apps not awaiting manual review
 		rows, err := db.Query(`SELECT id FROM submitted_apps WHERE NOT EXISTS (
@@ -45,12 +44,65 @@ func Dashboard(c *gin.Context) {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
 				return
 			}
-			appIDs = append(appIDs, appID)
+			sigAppIDs = append(sigAppIDs, appID)
 		}
 	}
+
+	var isReviewer bool
+	if err := db.QueryRow(
+		"SELECT reviewer FROM users WHERE gh_id = ?",
+		*user.ID,
+	).Scan(&isReviewer); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	reviewApps := make(map[string][]string)
+	if isReviewer {
+		ids, err := db.Query(`SELECT id FROM submitted_apps WHERE EXISTS (
+			SELECT 1 FROM submitted_app_review_errors
+			WHERE id = submitted_app_id
+		)`)
+		if err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		defer ids.Close()
+
+		for ids.Next() {
+			var appID string
+			if err := ids.Scan(&appID); err != nil {
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+
+			errors, err := db.Query(`SELECT review_error_id
+				FROM submitted_app_review_errors
+				WHERE submitted_app_id = ?
+			`, appID)
+			if err != nil {
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+			defer errors.Close()
+			var rErrors []string
+			for errors.Next() {
+				var rError string
+				if err := errors.Scan(&rError); err != nil {
+					_ = c.AbortWithError(http.StatusInternalServerError, err)
+					return
+				}
+				rErrors = append(rErrors, rError)
+			}
+
+			reviewApps[appID] = rErrors
+		}
+	}
+
 	c.HTML(http.StatusOK, "dashboard.html", gin.H{
-		"username":     user.Login,
-		"is_signer":    isSigner,
-		"pending_apps": appIDs,
+		"username":            user.Login,
+		"is_signer":           isSigner,
+		"pending_sig_apps":    sigAppIDs,
+		"is_reviewer":         isReviewer,
+		"pending_review_apps": reviewApps,
 	})
 }

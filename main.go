@@ -45,7 +45,8 @@ func main() {
 	}
 	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
 		gh_id INT PRIMARY KEY,
-		email TEXT NOT NULL
+		email TEXT NOT NULL,
+		reviewer INT NOT NULL CHECK (reviewer IN (FALSE, TRUE)) DEFAULT FALSE
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
@@ -142,6 +143,7 @@ func main() {
 	auth.POST("/api/logout", api.Logout)
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps", api.SubmitApp)
+	auth.POST("/api/apps/approve", api.ApproveApp)
 	auth.POST("/api/apps/:appID", middleware.SignerRequired(), api.PublishApp)
 
 	srv := &http.Server{

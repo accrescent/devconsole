@@ -13,7 +13,14 @@
         <script
             src="/admin.js"
             type="module"
-            integrity="sha256-8mntTXo7YpiQ+8T4L92MeBQRaht9ouE23p57AzvJ6lk=">
+            integrity="sha256-QeGKGpLJ6j5956KB58LlQkL3UiH+G1O+rBmPuNovgdE=">
+        </script>
+        {{end}}
+        {{if .is_reviewer}}
+        <script
+            src="/review.js"
+            type="module"
+            integrity="sha256-67Ee0qBMYw6qO+dsfHYu3vqTdHlSQFuH3Stm0Lkdx/c=">
         </script>
         {{end}}
     </head>
@@ -24,10 +31,30 @@
 
         {{if .is_signer}}
         <h3>Apps pending metadata signature</h3>
-        {{if .pending_apps}}
+        {{if .pending_sig_apps}}
         <ul>
-            {{range .pending_apps}}
-            <li>{{ . }}<button type="button" name="app_id" value="{{ . }}">Publish</button></li>
+            {{range .pending_sig_apps}}
+            <li>{{ . }}<button type="button" name="publish" value="{{ . }}">Publish</button></li>
+            {{end}}
+        </ul>
+        {{else}}
+        <p>No pending apps</p>
+        {{end}}
+        {{end}}
+
+        {{if .is_reviewer}}
+        <h3>Apps pending review</h3>
+        {{if .pending_review_apps}}
+        <ul>
+            {{range $appID, $errors := .pending_review_apps}}
+            <li>
+                {{$appID}}<button type="button" name="approve" value="{{$appID}}">Approve</button>
+                <ul>
+                    {{range $errors}}
+                    <li>{{ . }}</li>
+                    {{end}}
+                </ul>
+            </li>
             {{end}}
         </ul>
         {{else}}
