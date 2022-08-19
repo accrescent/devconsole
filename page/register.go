@@ -35,7 +35,7 @@ func Register(c *gin.Context) {
 	}
 
 	// Cache usable emails for later validation
-	emailInsertQuery := "INSERT INTO usable_email_cache (session_id, email) VALUES "
+	emailInsertQuery := "INSERT OR IGNORE INTO usable_email_cache (session_id, email) VALUES "
 	var inserts []string
 	var params []interface{}
 	for _, email := range usableEmails {
