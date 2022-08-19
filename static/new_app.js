@@ -4,6 +4,8 @@ const id = document.getElementById("id");
 const label = document.getElementById("label");
 const versionName = document.getElementById("version_name");
 const versionCode = document.getElementById("version_code");
+const reviewSection = document.getElementById("review_section");
+const reviewErrors = document.getElementById("review_errors");
 
 document.getElementById("new_app_form").onsubmit = event => {
     event.preventDefault();
@@ -27,9 +29,24 @@ document.getElementById("new_app_form").onsubmit = event => {
         versionName.innerText = `Display version: ${app.version_name}`;
         versionCode.innerText = `Version code: ${app.version_code}`;
 
+        while (reviewErrors.firstChild) {
+            reviewErrors.removeChild(reviewErrors.lastChild);
+        }
+        for (let error of app.review_errors) {
+            const err = document.createElement("li");
+            err.innerText = error;
+            reviewErrors.appendChild(err);
+        }
+        if (app.review_errors.length > 0) {
+            reviewSection.hidden = false;
+        } else {
+            reviewSection.hidden = true;
+        }
+
         appInfo.hidden = false;
     }).catch(err => {
         appInfo.hidden = true;
+        reviewSection.hidden = true;
 
         console.error(err);
     });

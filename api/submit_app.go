@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
@@ -32,13 +33,33 @@ func SubmitApp(c *gin.Context) {
 		return
 	}
 
+	rows, err := db.Query(`
+		SELECT review_error_id
+		FROM staging_app_review_errors
+		WHERE staging_app_id = ?
+	`, stagingAppID)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	defer rows.Close()
+	var reviewErrors []string
+	for rows.Next() {
+		var reviewError string
+		if err := rows.Scan(&reviewError); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		reviewErrors = append(reviewErrors, reviewError)
+	}
+
 	tx, err := db.Begin()
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	if _, err := tx.Exec(
-		"INSERT INTO approved_apps (id, gh_id, path) VALUES (?, ?, ?)",
+		"INSERT INTO submitted_apps (id, gh_id, path) VALUES (?, ?, ?)",
 		stagingAppID, ghID, path,
 	); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
@@ -50,6 +71,24 @@ func SubmitApp(c *gin.Context) {
 			_ = c.Error(err)
 		}
 		return
+	}
+	if len(reviewErrors) > 0 {
+		insertQuery := `INSERT INTO submitted_app_review_errors
+			(submitted_app_id, review_error_id) VALUES `
+		var inserts []string
+		var params []interface{}
+		for _, rError := range reviewErrors {
+			inserts = append(inserts, "(?, ?)")
+			params = append(params, stagingAppID, rError)
+		}
+		insertQuery = insertQuery + strings.Join(inserts, ",")
+		if _, err := tx.Exec(insertQuery, params...); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
 	}
 	if _, err := tx.Exec(
 		"DELETE FROM staging_apps WHERE id = ? AND session_id = ?",

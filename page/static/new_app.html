@@ -11,7 +11,7 @@
         <script
             src="/new_app.js"
             type="module"
-            integrity="sha256-c5ptvQe265j74fCg8SiIBdexrcTLd3YlN8cz+aG9uME=">
+            integrity="sha256-QAb2iASuyhCFXycMmr2BYXdbRRisApws+IUpKNzHN1E=">
         </script>
     </head>
     <body>
@@ -29,6 +29,11 @@
             <p id="label"></p>
             <p id="version_name"></p>
             <p id="version_code"></p>
+
+            <div id="review_section" hidden>
+                <h3>Your app uses the following permissions and so will require manual review:</h3>
+                <ul id="review_errors"></ul>
+            </div>
 
             <button id="submit">Submit new app</button><br><br>
         </div>

@@ -44,7 +44,7 @@ func PublishApp(c *gin.Context) {
 		}
 		return
 	}
-	if _, err := tx.Exec("DELETE FROM approved_apps WHERE id = ?", appID); err != nil {
+	if _, err := tx.Exec("DELETE FROM submitted_apps WHERE id = ?", appID); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {
 			_ = c.Error(err)

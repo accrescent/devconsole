@@ -22,7 +22,11 @@ func Dashboard(c *gin.Context) {
 	}
 
 	if *user.ID == conf.SignerGitHubID {
-		rows, err := db.Query("SELECT id FROM approved_apps")
+		// Only display apps not awaiting manual review
+		rows, err := db.Query(`SELECT id FROM submitted_apps WHERE NOT EXISTS (
+			SELECT 1 FROM submitted_app_review_errors
+			WHERE id = submitted_app_id
+		)`)
 		if err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
