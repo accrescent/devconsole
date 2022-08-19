@@ -21,7 +21,13 @@ func Dashboard(c *gin.Context) {
 		return
 	}
 
+	isSigner := false
 	if *user.ID == conf.SignerGitHubID {
+		isSigner = true
+	}
+
+	var appIDs []string
+	if isSigner {
 		// Only display apps not awaiting manual review
 		rows, err := db.Query(`SELECT id FROM submitted_apps WHERE NOT EXISTS (
 			SELECT 1 FROM submitted_app_review_errors
@@ -33,7 +39,6 @@ func Dashboard(c *gin.Context) {
 		}
 		defer rows.Close()
 
-		var appIDs []string
 		for rows.Next() {
 			var appID string
 			if err := rows.Scan(&appID); err != nil {
@@ -42,14 +47,10 @@ func Dashboard(c *gin.Context) {
 			}
 			appIDs = append(appIDs, appID)
 		}
-
-		c.HTML(http.StatusOK, "admin_dashboard.html", gin.H{
-			"username":     user.Login,
-			"pending_apps": appIDs,
-		})
-	} else {
-		c.HTML(http.StatusOK, "dashboard.html", gin.H{
-			"username": user.Login,
-		})
 	}
+	c.HTML(http.StatusOK, "dashboard.html", gin.H{
+		"username":     user.Login,
+		"is_signer":    isSigner,
+		"pending_apps": appIDs,
+	})
 }
