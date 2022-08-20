@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v46/github"
 )
 
 // GitHub's noreply email address format documented at

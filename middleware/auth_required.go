@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/go-github/v45/github"
+	"github.com/google/go-github/v46/github"
 	"golang.org/x/oauth2"
 
 	"github.com/accrescent/devportal/auth"
