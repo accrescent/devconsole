@@ -10,7 +10,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /reposerver
+RUN go build -tags=nomsgpack -o /reposerver
 
 EXPOSE 8080
 
