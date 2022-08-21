@@ -29,6 +29,19 @@
 
         <a href="/apps/new">Upload new app</a><br><br>
 
+        <h3>My apps</h3>
+
+        <h4>Approved</h2>
+        {{if .approved_apps}}
+        <ul>
+            {{range .approved_apps}}
+            <li>{{ . }}</li>
+            {{end}}
+        </ul>
+        {{else}}
+        <p>No approved apps</p>
+        {{end}}
+
         {{if .is_signer}}
         <h3>Apps pending metadata signature</h3>
         {{if .pending_sig_apps}}

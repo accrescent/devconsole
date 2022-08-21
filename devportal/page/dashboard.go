@@ -98,11 +98,34 @@ func Dashboard(c *gin.Context) {
 		}
 	}
 
+	rows, err := db.Query(`SELECT id FROM submitted_apps
+		WHERE NOT EXISTS (
+			SELECT 1 FROM submitted_app_review_errors
+			WHERE id = submitted_app_id
+		) AND gh_id = ?`,
+		*user.ID,
+	)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	defer rows.Close()
+	var approvedApps []string
+	for rows.Next() {
+		var approvedApp string
+		if err := rows.Scan(&approvedApp); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		approvedApps = append(approvedApps, approvedApp)
+	}
+
 	c.HTML(http.StatusOK, "dashboard.html", gin.H{
 		"username":            user.Login,
 		"is_signer":           isSigner,
 		"pending_sig_apps":    sigAppIDs,
 		"is_reviewer":         isReviewer,
 		"pending_review_apps": reviewApps,
+		"approved_apps":       approvedApps,
 	})
 }
