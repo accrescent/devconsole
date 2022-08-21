@@ -1,11 +1,9 @@
 package api
 
 import (
-	"bytes"
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 
@@ -30,17 +28,16 @@ func PublishApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	rawAPKSet, err := os.Open(appPath)
+	apkSet, err := os.Open(appPath)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	apkSet, err := io.ReadAll(rawAPKSet)
+	apkSetInfo, err := apkSet.Stat()
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	apkSetReader := bytes.NewReader(apkSet)
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -84,7 +81,7 @@ func PublishApp(c *gin.Context) {
 	req, err := http.NewRequest(
 		"POST",
 		fmt.Sprintf("%s/apps/%s/%d/%s", conf.RepoURL, appID, versionCode, versionName),
-		apkSetReader,
+		apkSet,
 	)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -94,6 +91,7 @@ func PublishApp(c *gin.Context) {
 		return
 	}
 	req.Header.Add("Authorization", "token "+conf.APIKey)
+	req.ContentLength = apkSetInfo.Size()
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
