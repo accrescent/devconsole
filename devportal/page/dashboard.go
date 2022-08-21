@@ -98,6 +98,28 @@ func Dashboard(c *gin.Context) {
 		}
 	}
 
+	waiting, err := db.Query(`SELECT id FROM submitted_apps
+		WHERE EXISTS (
+			SELECT 1 FROM submitted_app_review_errors
+			WHERE id = submitted_app_id
+		) AND gh_id = ?`,
+		*user.ID,
+	)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	defer waiting.Close()
+	var waitingApps []string
+	for waiting.Next() {
+		var waitingApp string
+		if err := waiting.Scan(&waitingApp); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		waitingApps = append(waitingApps, waitingApp)
+	}
+
 	approved, err := db.Query(`SELECT id FROM submitted_apps
 		WHERE NOT EXISTS (
 			SELECT 1 FROM submitted_app_review_errors
@@ -142,6 +164,7 @@ func Dashboard(c *gin.Context) {
 		"pending_sig_apps":    sigAppIDs,
 		"is_reviewer":         isReviewer,
 		"pending_review_apps": reviewApps,
+		"waiting_apps":        waitingApps,
 		"approved_apps":       approvedApps,
 		"published_apps":      publishedApps,
 	})

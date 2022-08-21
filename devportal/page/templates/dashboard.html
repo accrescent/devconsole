@@ -31,6 +31,17 @@
 
         <h3>My apps</h3>
 
+        <h4>Waiting on review</h2>
+        {{if .waiting_apps}}
+        <ul>
+            {{range .waiting_apps}}
+            <li>{{ . }}</li>
+            {{end}}
+        </ul>
+        {{else}}
+        <p>No apps waiting on review</p>
+        {{end}}
+
         <h4>Approved</h2>
         {{if .approved_apps}}
         <ul>
