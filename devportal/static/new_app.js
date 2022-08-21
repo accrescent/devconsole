@@ -57,5 +57,6 @@ document.getElementById("submit").onclick = () => {
         if (!resp.ok) {
             return Promise.reject();
         }
+        location.replace("/dashboard");
     }).catch(console.error);
 };
