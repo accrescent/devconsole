@@ -98,7 +98,7 @@ func Dashboard(c *gin.Context) {
 		}
 	}
 
-	rows, err := db.Query(`SELECT id FROM submitted_apps
+	approved, err := db.Query(`SELECT id FROM submitted_apps
 		WHERE NOT EXISTS (
 			SELECT 1 FROM submitted_app_review_errors
 			WHERE id = submitted_app_id
@@ -109,15 +109,31 @@ func Dashboard(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	defer rows.Close()
+	defer approved.Close()
 	var approvedApps []string
-	for rows.Next() {
+	for approved.Next() {
 		var approvedApp string
-		if err := rows.Scan(&approvedApp); err != nil {
+		if err := approved.Scan(&approvedApp); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
 		approvedApps = append(approvedApps, approvedApp)
+	}
+
+	published, err := db.Query("SELECT app_id FROM app_team_users WHERE user_gh_id = ?", *user.ID)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	defer published.Close()
+	var publishedApps []string
+	for published.Next() {
+		var publishedApp string
+		if err := published.Scan(&publishedApp); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		publishedApps = append(publishedApps, publishedApp)
 	}
 
 	c.HTML(http.StatusOK, "dashboard.html", gin.H{
@@ -127,5 +143,6 @@ func Dashboard(c *gin.Context) {
 		"is_reviewer":         isReviewer,
 		"pending_review_apps": reviewApps,
 		"approved_apps":       approvedApps,
+		"published_apps":      publishedApps,
 	})
 }

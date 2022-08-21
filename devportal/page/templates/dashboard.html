@@ -42,6 +42,17 @@
         <p>No approved apps</p>
         {{end}}
 
+        <h4>Published</h4>
+        {{if .published_apps}}
+        <ul>
+            {{range .published_apps}}
+            <li>{{ . }}</li>
+            {{end}}
+        </ul>
+        {{else}}
+        <p>No published apps</p>
+        {{end}}
+
         {{if .is_signer}}
         <h3>Apps pending metadata signature</h3>
         {{if .pending_sig_apps}}
