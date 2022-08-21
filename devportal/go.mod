@@ -3,7 +3,7 @@ module github.com/accrescent/devportal
 go 1.19
 
 require (
-	github.com/accrescent/apkstat v0.1.1
+	github.com/accrescent/apkstat v0.1.2
 	github.com/gin-gonic/gin v1.8.1
 	github.com/google/go-github/v46 v46.0.0
 	github.com/mattn/go-sqlite3 v1.14.15
