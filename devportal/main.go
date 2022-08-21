@@ -60,6 +60,8 @@ func main() {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_apps (
 		id TEXT NOT NULL,
 		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+		version_code INT NOT NULL,
+		version_name TEXT NOT NULL,
 		path TEXT NOT NULL,
 		PRIMARY KEY (id, session_id)
 	) STRICT`); err != nil {
@@ -84,6 +86,8 @@ func main() {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_apps (
 		id TEXT PRIMARY KEY,
 		gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
+		version_code INT NOT NULL,
+		version_name TEXT NOT NULL,
 		path TEXT NOT NULL
 	) STRICT`); err != nil {
 		log.Fatal(err)

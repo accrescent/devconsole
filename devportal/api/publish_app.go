@@ -1,7 +1,6 @@
 package api
 
 import (
-	"archive/zip"
 	"bytes"
 	"database/sql"
 	"errors"
@@ -10,7 +9,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/accrescent/apkstat"
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
 
@@ -23,11 +21,12 @@ func PublishApp(c *gin.Context) {
 	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("appID")
 
-	var appPath string
+	var appPath, versionName string
+	var versionCode int
 	if err := db.QueryRow(
-		"SELECT path FROM submitted_apps WHERE id = ?",
+		"SELECT version_code, version_name, path FROM submitted_apps WHERE id = ?",
 		appID,
-	).Scan(&appPath); err != nil {
+	).Scan(&versionCode, &versionName, &appPath); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -42,28 +41,6 @@ func PublishApp(c *gin.Context) {
 		return
 	}
 	apkSetReader := bytes.NewReader(apkSet)
-	z, err := zip.NewReader(apkSetReader, int64(len(apkSet)))
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	rawBaseAPK, err := z.Open("splits/base-master.apk")
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	defer rawBaseAPK.Close()
-	baseAPK, err := io.ReadAll(rawBaseAPK)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	apk, err := apk.FromReader(bytes.NewReader(baseAPK), int64(len(baseAPK)))
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	m := apk.Manifest()
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -106,7 +83,7 @@ func PublishApp(c *gin.Context) {
 	// Publish to repository server
 	req, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf("%s/apps/%s/%d/%s", conf.RepoURL, appID, m.VersionCode, m.VersionName),
+		fmt.Sprintf("%s/apps/%s/%d/%s", conf.RepoURL, appID, versionCode, versionName),
 		apkSetReader,
 	)
 	if err != nil {

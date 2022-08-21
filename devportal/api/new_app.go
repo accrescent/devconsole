@@ -119,8 +119,9 @@ func NewApp(c *gin.Context) {
 		return
 	}
 	if _, err := tx.Exec(
-		"REPLACE INTO staging_apps (id, session_id, path) VALUES (?, ?, ?)",
-		m.Package, sessionID, filename,
+		`REPLACE INTO staging_apps (id, session_id, version_code, version_name, path)
+		VALUES (?, ?, ?, ?, ?)`,
+		m.Package, sessionID, m.VersionCode, m.VersionName, filename,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {

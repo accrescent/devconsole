@@ -20,11 +20,14 @@ func SubmitApp(c *gin.Context) {
 		return
 	}
 
-	var path string
+	var path, versionName string
+	var versionCode int
 	if err := db.QueryRow(
-		"SELECT path FROM staging_apps WHERE id = ? AND session_id = ?",
+		`SELECT version_code, version_name, path
+		FROM staging_apps
+		WHERE id = ? AND session_id = ?`,
 		stagingAppID, sessionID,
-	).Scan(&path); err != nil {
+	).Scan(&versionCode, &versionName, &path); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
@@ -59,8 +62,9 @@ func SubmitApp(c *gin.Context) {
 		return
 	}
 	if _, err := tx.Exec(
-		"INSERT INTO submitted_apps (id, gh_id, path) VALUES (?, ?, ?)",
-		stagingAppID, ghID, path,
+		`INSERT INTO submitted_apps (id, gh_id, version_code, version_name, path)
+		VALUES (?, ?, ?, ?, ?)`,
+		stagingAppID, ghID, versionCode, versionName, path,
 	); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
 			_ = c.AbortWithError(http.StatusConflict, err)
