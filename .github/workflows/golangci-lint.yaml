@@ -12,5 +12,11 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - name: Lint
+      - name: Lint devportal
         uses: golangci/golangci-lint-action@v3
+        with:
+          working-directory: devportal
+      - name: Lint reposerver
+        uses: golangci/golangci-lint-action@v3
+        with:
+          working-directory: reposerver

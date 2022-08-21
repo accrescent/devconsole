@@ -12,4 +12,4 @@ jobs:
         with:
           go-version: 1.19
       - name: Build
-        run: go build -v
+        run: find -name go.mod -execdir go build -v \;

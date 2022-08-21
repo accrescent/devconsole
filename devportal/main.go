@@ -122,6 +122,8 @@ func main() {
 	}
 	conf := &config.Config{
 		SignerGitHubID: signerGitHubID,
+		RepoURL:        os.Getenv("REPO_URL"),
+		APIKey:         os.Getenv("API_KEY"),
 	}
 
 	r.LoadHTMLGlob("page/templates/*.html")
