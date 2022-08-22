@@ -14,6 +14,13 @@ for (let button of buttons) {
             if (!resp.ok) {
                 return Promise.reject();
             }
+
+            const container = button.parentNode.parentNode;
+            if (container.childElementCount > 1) {
+                container.removeChild(button.parentNode);
+            } else {
+                location.reload();
+            }
         }).catch(console.error);
     }
 }
