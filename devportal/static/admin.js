@@ -1,10 +1,10 @@
 const buttons = document.querySelectorAll("button[name='publish']");
 
-for (let button of buttons) {
+for (const button of buttons) {
     button.onclick = event => {
         event.preventDefault();
 
-        let appId = button.value;
+        const appId = button.value;
 
         fetch(`/api/apps/${appId}`, { method: "POST", mode: "same-origin" }).then(resp => {
             if (!resp.ok) {

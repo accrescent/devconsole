@@ -1,7 +1,7 @@
 document.getElementById("register_form").onsubmit = event => {
     event.preventDefault();
 
-    let selectedEmail = document.querySelector("input[name='email']:checked").value;
+    const selectedEmail = document.querySelector("input[name='email']:checked").value;
 
     fetch("/api/register", {
         method: "POST",

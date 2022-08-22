@@ -10,8 +10,8 @@ const reviewErrors = document.getElementById("review_errors");
 document.getElementById("new_app_form").onsubmit = event => {
     event.preventDefault();
 
-    let input = document.querySelector("input[type='file']");
-    let data = new FormData();
+    const input = document.querySelector("input[type='file']");
+    const data = new FormData();
     data.append("file", input.files[0]);
 
     fetch("/api/apps", {
@@ -32,7 +32,7 @@ document.getElementById("new_app_form").onsubmit = event => {
         while (reviewErrors.firstChild) {
             reviewErrors.removeChild(reviewErrors.lastChild);
         }
-        for (let error of app.review_errors) {
+        for (const error of app.review_errors) {
             const err = document.createElement("li");
             err.innerText = error;
             reviewErrors.appendChild(err);
