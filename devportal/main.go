@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := sql.Open("sqlite3", "devportal.db?_fk=yes")
+	db, err := sql.Open("sqlite3", "devportal.db?_fk=yes&_journal=WAL")
 	if err != nil {
 		log.Fatal(err)
 	}
