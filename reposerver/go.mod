@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.8.1
-	golang.org/x/exp v0.0.0-20220826205824-bd9bcdd0b820
+	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 )
 
 require (
