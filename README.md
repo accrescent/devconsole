@@ -18,6 +18,7 @@ these steps:
 2. Generate a new client secret and store it in `.env` as `GH_CLIENT_SECRET` at
    the root of the repository. Store the app's client ID as `GH_CLIENT_ID`.
    Store the authorization callback URL as `OAUTH2_REDIRECT_URL`.
+3. Go to `https://api.github.com/users/<YOUR_USERNAME>`, and set `SIGNER_GH_ID` in `.env` to the `id` value.
 4. Generate a TLS certificate & key and store them as `certs/cert.pem` &
    `certs/key.pem` respectively.
 5. Start the application by running `docker-compose up`
