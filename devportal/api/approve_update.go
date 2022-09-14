@@ -12,22 +12,7 @@ import (
 
 func ApproveUpdate(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("id")
-
-	// Check for authorization
-	var reviewer bool
-	if err := db.QueryRow(
-		"SELECT reviewer FROM users WHERE gh_id = ?",
-		ghID,
-	).Scan(&reviewer); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	if !reviewer {
-		c.AbortWithStatus(http.StatusForbidden)
-		return
-	}
 
 	var versionCode int
 	var versionName, path string

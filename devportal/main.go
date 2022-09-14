@@ -207,8 +207,8 @@ func main() {
 	auth.PATCH("/api/apps", api.SubmitApp)
 	auth.PUT("/api/apps/:id", api.UpdateApp)
 	auth.PATCH("/api/apps/:id", api.SubmitAppUpdate)
-	auth.POST("/api/apps/approve", api.ApproveApp)
-	auth.POST("/api/apps/:id/approve", api.ApproveUpdate)
+	auth.POST("/api/apps/approve", middleware.ReviewerRequired(), api.ApproveApp)
+	auth.POST("/api/apps/:id/approve", middleware.ReviewerRequired(), api.ApproveUpdate)
 	auth.POST("/api/apps/:id", middleware.SignerRequired(), api.PublishApp)
 
 	srv := &http.Server{
