@@ -60,6 +60,7 @@ func main() {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_apps (
 		id TEXT NOT NULL,
 		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
 		path TEXT NOT NULL,
@@ -83,9 +84,21 @@ func main() {
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_update_review_errors (
+		staging_app_id TEXT NOT NULL,
+		staging_update_session_id TEXT NOT NULL,
+		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
+		PRIMARY KEY (staging_app_id, staging_update_session_id, review_error_id),
+		FOREIGN KEY (staging_app_id, staging_update_session_id)
+			REFERENCES staging_app_updates(id, session_id)
+			ON DELETE CASCADE
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_apps (
 		id TEXT PRIMARY KEY,
 		gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
+		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
 		path TEXT NOT NULL
@@ -100,7 +113,10 @@ func main() {
 		log.Fatal(err)
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS app_teams (
-		id TEXT PRIMARY KEY
+		id TEXT PRIMARY KEY,
+		label TEXT NOT NULL,
+		version_code INT NOT NULL,
+		version_name TEXT NOT NULL
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
@@ -108,6 +124,44 @@ func main() {
 		app_id TEXT NOT NULL REFERENCES app_teams(id) ON DELETE CASCADE,
 		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
 		PRIMARY KEY (app_id, user_gh_id)
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_updates (
+		id TEXT NOT NULL REFERENCES app_teams(id) ON DELETE CASCADE,
+		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+		label TEXT NOT NULL,
+		version_code INT NOT NULL,
+		version_name TEXT NOT NULL,
+		path TEXT NOT NULL,
+		PRIMARY KEY (id, session_id)
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_updates (
+		id TEXT PRIMARY KEY REFERENCES app_teams(id) ON DELETE CASCADE,
+		label TEXT NOT NULL,
+		version_code INT NOT NULL,
+		version_name TEXT NOT NULL,
+		path TEXT NOT NULL
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_update_review_errors (
+		staging_app_id TEXT NOT NULL,
+		staging_update_session_id TEXT NOT NULL,
+		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
+		PRIMARY KEY (staging_app_id, staging_update_session_id, review_error_id),
+		FOREIGN KEY (staging_app_id, staging_update_session_id)
+			REFERENCES staging_app_updates(id, session_id)
+			ON DELETE CASCADE
+	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_update_review_errors (
+		submitted_app_id TEXT NOT NULL REFERENCES submitted_updates(id) ON DELETE CASCADE,
+		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
+		PRIMARY KEY (submitted_app_id, review_error_id)
 	) STRICT`); err != nil {
 		log.Fatal(err)
 	}
@@ -145,12 +199,17 @@ func main() {
 	auth.GET("/register", page.Register)
 	auth.GET("/dashboard", page.Dashboard)
 	auth.StaticFile("/apps/new", "./page/static/new_app.html")
+	auth.GET("/apps/:id", page.AppInfo)
+	auth.GET("/apps/:id/update", page.UpdateApp)
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.Logout)
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps", api.SubmitApp)
+	auth.PUT("/api/apps/:id", api.UpdateApp)
+	auth.PATCH("/api/apps/:id", api.SubmitAppUpdate)
 	auth.POST("/api/apps/approve", api.ApproveApp)
-	auth.POST("/api/apps/:appID", middleware.SignerRequired(), api.PublishApp)
+	auth.POST("/api/apps/:id/approve", api.ApproveUpdate)
+	auth.POST("/api/apps/:id", middleware.SignerRequired(), api.PublishApp)
 
 	srv := &http.Server{
 		Addr:    ":8080",

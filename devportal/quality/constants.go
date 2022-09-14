@@ -1,9 +1,9 @@
 package quality
 
-type uploadType int
+type UploadType int
 
 const (
-	NewApp uploadType = iota
+	NewApp UploadType = iota
 	AppUpdate
 )
 

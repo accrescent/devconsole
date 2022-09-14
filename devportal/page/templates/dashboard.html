@@ -20,7 +20,7 @@
         <script
             src="/review.js"
             type="module"
-            integrity="sha256-ecxaXifFEyXoUTY2LLr2HMJ2Sv/5V4W3uHSjpSC+ljA=">
+            integrity="sha256-YhyxtiS4RBhJt1XHxIc3rkc0zId1ucQoTH6lBjWnF48=">
         </script>
         {{end}}
     </head>
@@ -57,7 +57,7 @@
         {{if .published_apps}}
         <ul>
             {{range .published_apps}}
-            <li>{{ . }}</li>
+            <li><a href="/apps/{{ . }}">{{ . }}</a></li>
             {{end}}
         </ul>
         {{else}}
@@ -94,6 +94,24 @@
         </ul>
         {{else}}
         <p>No pending apps</p>
+        {{end}}
+
+        <h3>App updates pending review</h3>
+        {{if .pending_review_updates}}
+        <ul>
+            {{range $appID, $errors := .pending_review_updates}}
+            <li>
+                {{$appID}}<button type="button" name="approve_update" value="{{$appID}}">Approve</button>
+                <ul>
+                    {{range $errors}}
+                    <li>{{ . }}</li>
+                    {{end}}
+                </ul>
+            </li>
+            {{end}}
+        </ul>
+        {{else}}
+        <p>No pending updates</p>
         {{end}}
         {{end}}
 

@@ -97,6 +97,47 @@ func Dashboard(c *gin.Context) {
 			reviewApps[appID] = rErrors
 		}
 	}
+	reviewUpdates := make(map[string][]string)
+	if isReviewer {
+		ids, err := db.Query(`SELECT id FROM submitted_Updates WHERE EXISTS (
+			SELECT 1 FROM submitted_update_review_errors
+			WHERE id = submitted_app_id
+		)`)
+		if err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		defer ids.Close()
+
+		for ids.Next() {
+			var appID string
+			if err := ids.Scan(&appID); err != nil {
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+
+			errors, err := db.Query(`SELECT review_error_id
+				FROM submitted_update_review_errors
+				WHERE submitted_app_id = ?
+			`, appID)
+			if err != nil {
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+			defer errors.Close()
+			var rErrors []string
+			for errors.Next() {
+				var rError string
+				if err := errors.Scan(&rError); err != nil {
+					_ = c.AbortWithError(http.StatusInternalServerError, err)
+					return
+				}
+				rErrors = append(rErrors, rError)
+			}
+
+			reviewUpdates[appID] = rErrors
+		}
+	}
 
 	waiting, err := db.Query(`SELECT id FROM submitted_apps
 		WHERE EXISTS (
@@ -159,13 +200,14 @@ func Dashboard(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "dashboard.html", gin.H{
-		"username":            user.Login,
-		"is_signer":           isSigner,
-		"pending_sig_apps":    sigAppIDs,
-		"is_reviewer":         isReviewer,
-		"pending_review_apps": reviewApps,
-		"waiting_apps":        waitingApps,
-		"approved_apps":       approvedApps,
-		"published_apps":      publishedApps,
+		"username":               user.Login,
+		"is_signer":              isSigner,
+		"pending_sig_apps":       sigAppIDs,
+		"is_reviewer":            isReviewer,
+		"pending_review_apps":    reviewApps,
+		"pending_review_updates": reviewUpdates,
+		"waiting_apps":           waitingApps,
+		"approved_apps":          approvedApps,
+		"published_apps":         publishedApps,
 	})
 }

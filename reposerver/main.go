@@ -26,6 +26,7 @@ func main() {
 
 	auth := router.Group("/", authRequired(apiKey))
 	auth.POST("/apps/:id/:versionCode/:version", api.PublishApp)
+	auth.PUT("/apps/:id/:versionCode/:version", api.UpdateApp)
 
 	srv := &http.Server{
 		Addr:    ":8080",
