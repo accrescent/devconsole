@@ -78,21 +78,7 @@ func NewApp(c *gin.Context) {
 	}
 
 	// Run tests whose failures warrant manual review
-	insertQuery := "INSERT OR IGNORE INTO review_errors (id) VALUES "
-	var inserts []string
-	var params []interface{}
 	reviewErrors := quality.RunReviewTests(apk)
-	for _, rError := range reviewErrors {
-		inserts = append(inserts, "(?)")
-		params = append(params, rError)
-	}
-	insertQuery = insertQuery + strings.Join(inserts, ",")
-	if len(reviewErrors) > 0 {
-		if _, err := db.Exec(insertQuery, params...); err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			return
-		}
-	}
 
 	m := apk.Manifest()
 
@@ -113,10 +99,10 @@ func NewApp(c *gin.Context) {
 		return
 	}
 	if len(reviewErrors) > 0 {
-		insertQuery = `INSERT INTO staging_app_review_errors
+		insertQuery := `INSERT INTO staging_app_review_errors
 		(staging_app_id, staging_app_session_id, review_error_id) VALUES `
-		inserts = []string{}
-		params = []interface{}{}
+		var inserts []string
+		var params []interface{}
 		for _, rError := range reviewErrors {
 			inserts = append(inserts, "(?, ?, ?)")
 			params = append(params, m.Package, sessionID, rError)

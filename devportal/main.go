@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -22,6 +23,7 @@ import (
 	"github.com/accrescent/devportal/config"
 	"github.com/accrescent/devportal/middleware"
 	"github.com/accrescent/devportal/page"
+	"github.com/accrescent/devportal/quality"
 )
 
 func main() {
@@ -71,6 +73,9 @@ func main() {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS review_errors (
 		id TEXT PRIMARY KEY
 	) STRICT`); err != nil {
+		log.Fatal(err)
+	}
+	if err := populateReviewErrors(db); err != nil {
 		log.Fatal(err)
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_review_errors (
@@ -232,4 +237,20 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Shutting down forcefully:", err)
 	}
+}
+
+func populateReviewErrors(db *sql.DB) error {
+	query := "INSERT OR IGNORE INTO review_errors (id) VALUES "
+	var inserts []string
+	var params []interface{}
+	for _, reviewError := range quality.PermissionReviewBlacklist {
+		inserts = append(inserts, "(?)")
+		params = append(params, reviewError)
+	}
+	query = query + strings.Join(inserts, ",")
+	if _, err := db.Exec(query, params...); err != nil {
+		return err
+	}
+
+	return nil
 }
