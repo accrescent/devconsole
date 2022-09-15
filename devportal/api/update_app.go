@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -14,9 +15,24 @@ import (
 	"github.com/accrescent/devportal/quality"
 )
 
-func NewApp(c *gin.Context) {
+func UpdateApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	sessionID := c.MustGet("session_id").(string)
+	appID := c.Param("id")
+
+	var versionCode int
+	var versionName string
+	if err := db.QueryRow(
+		"SELECT version_code, version_name from app_teams WHERE id = ?",
+		appID,
+	).Scan(&versionCode, &versionName); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			_ = c.AbortWithError(http.StatusNotFound, err)
+		} else {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+		}
+		return
+	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -42,8 +58,8 @@ func NewApp(c *gin.Context) {
 
 		var unsubmitted bool
 		if err := db.QueryRow(
-			"SELECT EXISTS (SELECT 1 FROM staging_apps WHERE session_id = ? AND path = ?)",
-			sessionID, filename,
+			"SELECT EXISTS (SELECT 1 FROM staging_app_updates WHERE id = ?)",
+			appID,
 		).Scan(&unsubmitted); err != nil {
 			_ = cCp.Error(err)
 			return
@@ -51,8 +67,8 @@ func NewApp(c *gin.Context) {
 
 		if unsubmitted {
 			if _, err := db.Exec(
-				"DELETE FROM staging_apps WHERE session_id = ? AND path = ?",
-				sessionID, filename,
+				"DELETE FROM staging_app_updates WHERE id = ?",
+				appID,
 			); err != nil {
 				_ = cCp.Error(err)
 			}
@@ -71,8 +87,18 @@ func NewApp(c *gin.Context) {
 		return
 	}
 
+	m := apk.Manifest()
+
 	// Run tests whose failures warrant immediate rejection
-	if err := quality.RunRejectTests(apk, quality.NewApp); err != nil {
+	if int(m.VersionCode) <= versionCode {
+		err := fmt.Sprintf(
+			"version %d is not more than current version %d",
+			m.VersionCode, versionCode,
+		)
+		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err})
+		return
+	}
+	if err := quality.RunRejectTests(apk, quality.AppUpdate); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
@@ -80,15 +106,13 @@ func NewApp(c *gin.Context) {
 	// Run tests whose failures warrant manual review
 	reviewErrors := quality.RunReviewTests(apk)
 
-	m := apk.Manifest()
-
 	tx, err := db.Begin()
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	if _, err := tx.Exec(
-		`REPLACE INTO staging_apps (id, session_id, label, version_code, version_name, path)
+		`REPLACE INTO staging_app_updates (id, session_id, label, version_code, version_name, path)
 		VALUES (?, ?, ?, ?, ?, ?)`,
 		m.Package, sessionID, m.Application.Label, m.VersionCode, m.VersionName, filename,
 	); err != nil {
@@ -99,8 +123,8 @@ func NewApp(c *gin.Context) {
 		return
 	}
 	if len(reviewErrors) > 0 {
-		insertQuery := `INSERT INTO staging_app_review_errors
-		(staging_app_id, staging_app_session_id, review_error_id) VALUES `
+		insertQuery := `INSERT INTO staging_update_review_errors
+		(staging_app_id, staging_update_session_id, review_error_id) VALUES `
 		var inserts []string
 		var params []interface{}
 		for _, rError := range reviewErrors {
@@ -122,13 +146,14 @@ func NewApp(c *gin.Context) {
 	}
 
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie(stagingAppIDCookie, m.Package, 5*60, "/", "", true, true) // Max-Age 5 min
+	c.SetCookie(stagingUpdateAppIDCookie, m.Package, 5*60, "/", "", true, true) // Max-Age 5 min
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id":            m.Package,
-		"label":         m.Application.Label,
-		"version_name":  m.VersionName,
-		"version_code":  m.VersionCode,
+		"current_vcode": versionCode,
+		"current_vname": versionName,
+		"new_vcode":     m.VersionCode,
+		"new_vname":     m.VersionName,
 		"review_errors": reviewErrors,
 	})
 }

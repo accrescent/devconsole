@@ -7,27 +7,27 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mattn/go-sqlite3"
+
+	"github.com/accrescent/devportal/quality"
 )
 
-func SubmitApp(c *gin.Context) {
+func SubmitAppUpdate(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	sessionID := c.MustGet("session_id").(string)
-	ghID := c.MustGet("gh_id").(int64)
-	stagingAppID, err := c.Cookie(stagingAppIDCookie)
+	stagingAppID, err := c.Cookie(stagingUpdateAppIDCookie)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	var label, path, versionName string
+	var label, appPath, versionName string
 	var versionCode int
 	if err := db.QueryRow(
 		`SELECT label, version_code, version_name, path
-		FROM staging_apps
+		FROM staging_app_updates
 		WHERE id = ? AND session_id = ?`,
 		stagingAppID, sessionID,
-	).Scan(&label, &versionCode, &versionName, &path); err != nil {
+	).Scan(&label, &versionCode, &versionName, &appPath); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
@@ -38,7 +38,7 @@ func SubmitApp(c *gin.Context) {
 
 	rows, err := db.Query(`
 		SELECT review_error_id
-		FROM staging_app_review_errors
+		FROM staging_update_review_errors
 		WHERE staging_app_id = ?
 	`, stagingAppID)
 	if err != nil {
@@ -61,23 +61,20 @@ func SubmitApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if _, err := tx.Exec(
-		`INSERT INTO submitted_apps (id, gh_id, label, version_code, version_name, path)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		stagingAppID, ghID, label, versionCode, versionName, path,
-	); err != nil {
-		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
-			_ = c.AbortWithError(http.StatusConflict, err)
-		} else {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-		}
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
 	if len(reviewErrors) > 0 {
-		insertQuery := `INSERT INTO submitted_app_review_errors
+		if _, err := tx.Exec(
+			`REPLACE INTO submitted_updates (id, label, version_code, version_name, path)
+			VALUES (?, ?, ?, ?, ?)`,
+			stagingAppID, label, versionCode, versionName, appPath,
+		); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
+
+		insertQuery := `INSERT INTO submitted_update_review_errors
 			(submitted_app_id, review_error_id) VALUES `
 		var inserts []string
 		var params []interface{}
@@ -93,9 +90,30 @@ func SubmitApp(c *gin.Context) {
 			}
 			return
 		}
+	} else {
+		// No review necessary, so publish the update immediately.
+		if _, err := tx.Exec(
+			"UPDATE app_teams SET version_code = ?, version_name = ?",
+			versionCode, versionName,
+		); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
+
+		if err := publish(c, stagingAppID, versionCode, versionName,
+			quality.AppUpdate, appPath,
+		); err != nil {
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
 	}
 	if _, err := tx.Exec(
-		"DELETE FROM staging_apps WHERE id = ? AND session_id = ?",
+		"DELETE FROM staging_app_updates WHERE id = ? AND session_id = ?",
 		stagingAppID, sessionID,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -104,6 +122,7 @@ func SubmitApp(c *gin.Context) {
 		}
 		return
 	}
+
 	if err := tx.Commit(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return

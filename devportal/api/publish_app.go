@@ -3,38 +3,25 @@ package api
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
 
-	"github.com/accrescent/devportal/config"
+	"github.com/accrescent/devportal/quality"
 )
 
 func PublishApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	conf := c.MustGet("config").(*config.Config)
 	ghID := c.MustGet("gh_id").(int64)
-	appID := c.Param("appID")
+	appID := c.Param("id")
 
-	var appPath, versionName string
+	var label, appPath, versionName string
 	var versionCode int
 	if err := db.QueryRow(
-		"SELECT version_code, version_name, path FROM submitted_apps WHERE id = ?",
+		"SELECT label, version_code, version_name, path FROM submitted_apps WHERE id = ?",
 		appID,
-	).Scan(&versionCode, &versionName, &appPath); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	apkSet, err := os.Open(appPath)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	apkSetInfo, err := apkSet.Stat()
-	if err != nil {
+	).Scan(&label, &versionCode, &versionName, &appPath); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -44,7 +31,10 @@ func PublishApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if _, err := tx.Exec("INSERT INTO app_teams (id) VALUES (?)", appID); err != nil {
+	if _, err := tx.Exec(`INSERT INTO app_teams (id, label, version_code, version_name)
+		VALUES (?, ?, ?, ?)`,
+		appID, label, versionCode, versionName,
+	); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
 			_ = c.AbortWithError(http.StatusConflict, err)
 		} else {
@@ -78,46 +68,7 @@ func PublishApp(c *gin.Context) {
 	}
 
 	// Publish to repository server
-	req, err := http.NewRequest(
-		"POST",
-		fmt.Sprintf("%s/apps/%s/%d/%s", conf.RepoURL, appID, versionCode, versionName),
-		apkSet,
-	)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
-	req.Header.Add("Authorization", "token "+conf.APIKey)
-	req.ContentLength = apkSetInfo.Size()
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		switch resp.StatusCode {
-		case http.StatusBadRequest:
-			c.AbortWithStatus(http.StatusInternalServerError)
-		case http.StatusUnauthorized:
-			_ = c.AbortWithError(
-				http.StatusInternalServerError,
-				errors.New("invalid repo server API key"),
-			)
-		case http.StatusConflict:
-			_ = c.AbortWithError(resp.StatusCode, errors.New("app already published"))
-		default:
-			_ = c.AbortWithError(
-				http.StatusInternalServerError,
-				errors.New("unknown error"),
-			)
-		}
+	if err := publish(c, appID, versionCode, versionName, quality.NewApp, appPath); err != nil {
 		if err := tx.Rollback(); err != nil {
 			_ = c.Error(err)
 		}

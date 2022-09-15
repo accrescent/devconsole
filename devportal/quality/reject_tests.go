@@ -7,7 +7,7 @@ import (
 	"github.com/accrescent/apkstat"
 )
 
-func RunRejectTests(apk *apk.APK, uploadType uploadType) error {
+func RunRejectTests(apk *apk.APK, uploadType UploadType) error {
 	manifest := apk.Manifest()
 	targetSDK := manifest.UsesSDK.TargetSDKVersion
 

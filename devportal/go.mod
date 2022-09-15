@@ -26,6 +26,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.3 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8 // indirect
+	golang.org/x/exp v0.0.0-20220909182711-5c715a9e8561 // indirect
 	golang.org/x/net v0.0.0-20220812174116-3211cb980234 // indirect
 	golang.org/x/sys v0.0.0-20220818161305-2296e01440c6 // indirect
 	golang.org/x/text v0.3.7 // indirect
