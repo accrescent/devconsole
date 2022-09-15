@@ -1,19 +1,15 @@
 package api
 
 import (
-	"archive/zip"
-	"bytes"
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/accrescent/apkstat"
 	"github.com/gin-gonic/gin"
 
 	"github.com/accrescent/devportal/quality"
@@ -81,27 +77,13 @@ func UpdateApp(c *gin.Context) {
 	}()
 
 	// We've received the (supposed) APK set. Now extract the app metadata.
-	apkSet, err := zip.OpenReader(filename)
+	apk, err := apkFromAPKSet(filename)
 	if err != nil {
-		_ = c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-	defer apkSet.Close()
-	rawBaseAPK, err := apkSet.Open("splits/base-master.apk")
-	if err != nil {
-		_ = c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-	defer rawBaseAPK.Close()
-	baseAPK, err := io.ReadAll(rawBaseAPK)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
-	apk, err := apk.FromReader(bytes.NewReader(baseAPK), int64(len(baseAPK)))
-	if err != nil {
-		_ = c.AbortWithError(http.StatusBadRequest, err)
+		if errors.Is(err, ErrFatalIO) {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+		} else {
+			_ = c.AbortWithError(http.StatusBadRequest, err)
+		}
 		return
 	}
 
