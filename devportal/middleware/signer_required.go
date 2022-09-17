@@ -17,5 +17,7 @@ func SignerRequired() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
+
+		c.Next()
 	}
 }

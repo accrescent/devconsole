@@ -60,5 +60,7 @@ func AuthRequired() gin.HandlerFunc {
 		c.Set("session_id", sessionID)
 		c.Set("gh_id", ghID)
 		c.Set("gh_client", client)
+
+		c.Next()
 	}
 }
