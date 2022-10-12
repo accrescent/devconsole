@@ -50,7 +50,7 @@ func Dashboard(c *gin.Context) {
 
 	var isReviewer bool
 	if err := db.QueryRow(
-		"SELECT reviewer FROM users WHERE gh_id = ?",
+		"SELECT EXISTS (SELECT 1 from reviewers WHERE user_gh_id = ?)",
 		*user.ID,
 	).Scan(&isReviewer); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
