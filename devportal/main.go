@@ -2,28 +2,25 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/endpoints"
 
 	"github.com/accrescent/devportal/api"
 	"github.com/accrescent/devportal/auth"
 	"github.com/accrescent/devportal/config"
+	"github.com/accrescent/devportal/data"
 	"github.com/accrescent/devportal/middleware"
 	"github.com/accrescent/devportal/page"
-	"github.com/accrescent/devportal/quality"
 )
 
 func main() {
@@ -33,141 +30,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := sql.Open("sqlite3", "devportal.db?_fk=yes&_journal=WAL")
+	db, err := data.OpenDB()
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS sessions (
-		id TEXT PRIMARY KEY,
-		gh_id INT NOT NULL,
-		access_token TEXT NOT NULL,
-		expiry_time INT NOT NULL
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err = db.Exec(`CREATE TABLE IF NOT EXISTS users (
-		gh_id INT PRIMARY KEY,
-		email TEXT NOT NULL,
-		reviewer INT NOT NULL CHECK (reviewer IN (FALSE, TRUE)) DEFAULT FALSE
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS usable_email_cache (
-		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-		email TEXT NOT NULL,
-		PRIMARY KEY (session_id, email)
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_apps (
-		id TEXT NOT NULL,
-		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-		label TEXT NOT NULL,
-		version_code INT NOT NULL,
-		version_name TEXT NOT NULL,
-		path TEXT NOT NULL,
-		PRIMARY KEY (id, session_id)
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS review_errors (
-		id TEXT PRIMARY KEY
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if err := populateReviewErrors(db); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_review_errors (
-		staging_app_id TEXT NOT NULL,
-		staging_app_session_id TEXT NOT NULL,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (staging_app_id, staging_app_session_id, review_error_id),
-		FOREIGN KEY (staging_app_id, staging_app_session_id)
-			REFERENCES staging_apps(id, session_id)
-			ON DELETE CASCADE
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_update_review_errors (
-		staging_app_id TEXT NOT NULL,
-		staging_update_session_id TEXT NOT NULL,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (staging_app_id, staging_update_session_id, review_error_id),
-		FOREIGN KEY (staging_app_id, staging_update_session_id)
-			REFERENCES staging_app_updates(id, session_id)
-			ON DELETE CASCADE
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_apps (
-		id TEXT PRIMARY KEY,
-		gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
-		label TEXT NOT NULL,
-		version_code INT NOT NULL,
-		version_name TEXT NOT NULL,
-		path TEXT NOT NULL
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_app_review_errors (
-		submitted_app_id TEXT NOT NULL REFERENCES submitted_apps(id) ON DELETE CASCADE,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (submitted_app_id, review_error_id)
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS app_teams (
-		id TEXT PRIMARY KEY,
-		label TEXT NOT NULL,
-		version_code INT NOT NULL,
-		version_name TEXT NOT NULL
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS app_team_users (
-		app_id TEXT NOT NULL REFERENCES app_teams(id) ON DELETE CASCADE,
-		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
-		PRIMARY KEY (app_id, user_gh_id)
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_updates (
-		id TEXT NOT NULL REFERENCES app_teams(id) ON DELETE CASCADE,
-		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-		label TEXT NOT NULL,
-		version_code INT NOT NULL,
-		version_name TEXT NOT NULL,
-		path TEXT NOT NULL,
-		PRIMARY KEY (id, session_id)
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_updates (
-		id TEXT PRIMARY KEY REFERENCES app_teams(id) ON DELETE CASCADE,
-		label TEXT NOT NULL,
-		version_code INT NOT NULL,
-		version_name TEXT NOT NULL,
-		path TEXT NOT NULL
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_update_review_errors (
-		staging_app_id TEXT NOT NULL,
-		staging_update_session_id TEXT NOT NULL,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (staging_app_id, staging_update_session_id, review_error_id),
-		FOREIGN KEY (staging_app_id, staging_update_session_id)
-			REFERENCES staging_app_updates(id, session_id)
-			ON DELETE CASCADE
-	) STRICT`); err != nil {
-		log.Fatal(err)
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_update_review_errors (
-		submitted_app_id TEXT NOT NULL REFERENCES submitted_updates(id) ON DELETE CASCADE,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (submitted_app_id, review_error_id)
-	) STRICT`); err != nil {
+	if err := data.InitializeDB(db); err != nil {
 		log.Fatal(err)
 	}
 
@@ -237,20 +104,4 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("Shutting down forcefully:", err)
 	}
-}
-
-func populateReviewErrors(db *sql.DB) error {
-	query := "INSERT OR IGNORE INTO review_errors (id) VALUES "
-	var inserts []string
-	var params []interface{}
-	for _, reviewError := range quality.PermissionReviewBlacklist {
-		inserts = append(inserts, "(?)")
-		params = append(params, reviewError)
-	}
-	query = query + strings.Join(inserts, ",")
-	if _, err := db.Exec(query, params...); err != nil {
-		return err
-	}
-
-	return nil
 }
