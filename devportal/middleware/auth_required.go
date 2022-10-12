@@ -26,28 +26,16 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
+		var ghID int64
 		var token string
 		if err := db.QueryRow(
-			"SELECT access_token FROM sessions WHERE id = ? AND expiry_time > ?",
+			"SELECT gh_id, access_token FROM sessions WHERE id = ? AND expiry_time > ?",
 			sessionID, time.Now().Unix(),
-		).Scan(&token); err != nil {
+		).Scan(&ghID, &token); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				c.Abort()
 				_ = c.Error(err)
 				c.Redirect(http.StatusFound, "/")
-			} else {
-				_ = c.AbortWithError(http.StatusInternalServerError, err)
-			}
-			return
-		}
-
-		var ghID int64
-		if err := db.QueryRow(
-			"SELECT gh_id FROM sessions WHERE id = ?",
-			sessionID,
-		).Scan(&ghID); err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				_ = c.AbortWithError(http.StatusUnauthorized, err)
 			} else {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
 			}
