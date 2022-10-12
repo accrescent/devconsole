@@ -14,7 +14,7 @@ func ReviewerRequired() gin.HandlerFunc {
 
 		var reviewer bool
 		if err := db.QueryRow(
-			"SELECT reviewer FROM users WHERE gh_id = ?",
+			"SELECT EXISTS (SELECT 1 from reviewers WHERE user_gh_id = ?)",
 			ghID,
 		).Scan(&reviewer); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)

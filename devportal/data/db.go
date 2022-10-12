@@ -27,8 +27,13 @@ func InitializeDB(db *sql.DB) error {
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS users (
 		gh_id INT PRIMARY KEY,
-		email TEXT NOT NULL,
-		reviewer INT NOT NULL CHECK (reviewer IN (FALSE, TRUE)) DEFAULT FALSE
+		email TEXT NOT NULL
+	) STRICT`); err != nil {
+		return err
+	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS reviewers (
+		user_gh_id INT PRIMARY KEY REFERENCES users(gh_id) ON DELETE CASCADE,
+		email TEXT NOT NULL
 	) STRICT`); err != nil {
 		return err
 	}
