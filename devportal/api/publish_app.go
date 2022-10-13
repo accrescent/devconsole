@@ -46,7 +46,7 @@ func PublishApp(c *gin.Context) {
 		return
 	}
 	if _, err := tx.Exec(
-		"INSERT INTO user_permissions (app_id, user_gh_id) VALUES (?, ?)",
+		"INSERT INTO user_permissions (app_id, user_gh_id, can_update) VALUES (?, ?, TRUE)",
 		appID, ghID,
 	); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {

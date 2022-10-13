@@ -113,6 +113,7 @@ func InitializeDB(db *sql.DB) error {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS user_permissions (
 		app_id TEXT NOT NULL REFERENCES published_apps(id) ON DELETE CASCADE,
 		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
+		can_update INT NOT NULL CHECK(can_update in (FALSE, TRUE)) DEFAULT FALSE,
 		PRIMARY KEY (app_id, user_gh_id)
 	) STRICT`); err != nil {
 		return err
