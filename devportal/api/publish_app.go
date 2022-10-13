@@ -31,7 +31,7 @@ func PublishApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if _, err := tx.Exec(`INSERT INTO app_teams (id, label, version_code, version_name)
+	if _, err := tx.Exec(`INSERT INTO published_apps (id, label, version_code, version_name)
 		VALUES (?, ?, ?, ?)`,
 		appID, label, versionCode, versionName,
 	); err != nil {
@@ -46,7 +46,7 @@ func PublishApp(c *gin.Context) {
 		return
 	}
 	if _, err := tx.Exec(
-		"INSERT INTO app_team_users (app_id, user_gh_id) VALUES (?, ?)",
+		"INSERT INTO published_app_users (app_id, user_gh_id) VALUES (?, ?)",
 		appID, ghID,
 	); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {

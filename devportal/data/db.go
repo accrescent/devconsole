@@ -102,7 +102,7 @@ func InitializeDB(db *sql.DB) error {
 	) STRICT`); err != nil {
 		return err
 	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS app_teams (
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS published_apps (
 		id TEXT PRIMARY KEY,
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
@@ -110,15 +110,15 @@ func InitializeDB(db *sql.DB) error {
 	) STRICT`); err != nil {
 		return err
 	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS app_team_users (
-		app_id TEXT NOT NULL REFERENCES app_teams(id) ON DELETE CASCADE,
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS published_app_users (
+		app_id TEXT NOT NULL REFERENCES published_apps(id) ON DELETE CASCADE,
 		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
 		PRIMARY KEY (app_id, user_gh_id)
 	) STRICT`); err != nil {
 		return err
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_updates (
-		id TEXT NOT NULL REFERENCES app_teams(id) ON DELETE CASCADE,
+		id TEXT NOT NULL REFERENCES published_apps(id) ON DELETE CASCADE,
 		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
@@ -129,7 +129,7 @@ func InitializeDB(db *sql.DB) error {
 		return err
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_updates (
-		id TEXT PRIMARY KEY REFERENCES app_teams(id) ON DELETE CASCADE,
+		id TEXT PRIMARY KEY REFERENCES published_apps(id) ON DELETE CASCADE,
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,

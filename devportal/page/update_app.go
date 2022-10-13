@@ -16,7 +16,7 @@ func UpdateApp(c *gin.Context) {
 	var versionCode int
 	if err := db.QueryRow(
 		`SELECT label, version_code, version_name
-		FROM app_teams WHERE id = ?`,
+		FROM published_apps WHERE id = ?`,
 		appID,
 	).Scan(&label, &versionCode, &versionName); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

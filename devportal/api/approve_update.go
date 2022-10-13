@@ -35,7 +35,7 @@ func ApproveUpdate(c *gin.Context) {
 	}
 
 	if _, err := tx.Exec(
-		"UPDATE app_teams SET version_code = ?, version_name = ?",
+		"UPDATE published_apps SET version_code = ?, version_name = ?",
 		versionCode, versionName,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)

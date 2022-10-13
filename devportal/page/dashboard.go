@@ -183,7 +183,10 @@ func Dashboard(c *gin.Context) {
 		approvedApps = append(approvedApps, approvedApp)
 	}
 
-	published, err := db.Query("SELECT app_id FROM app_team_users WHERE user_gh_id = ?", *user.ID)
+	published, err := db.Query(
+		"SELECT app_id FROM published_app_users WHERE user_gh_id = ?",
+		*user.ID,
+	)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
