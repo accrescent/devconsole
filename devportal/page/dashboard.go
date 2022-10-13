@@ -184,7 +184,7 @@ func Dashboard(c *gin.Context) {
 	}
 
 	published, err := db.Query(
-		"SELECT app_id FROM published_app_users WHERE user_gh_id = ?",
+		"SELECT app_id FROM user_permissions WHERE user_gh_id = ?",
 		*user.ID,
 	)
 	if err != nil {
