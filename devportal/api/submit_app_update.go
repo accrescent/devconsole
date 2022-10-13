@@ -93,7 +93,7 @@ func SubmitAppUpdate(c *gin.Context) {
 	} else {
 		// No review necessary, so publish the update immediately.
 		if _, err := tx.Exec(
-			"UPDATE app_teams SET version_code = ?, version_name = ?",
+			"UPDATE published_apps SET version_code = ?, version_name = ?",
 			versionCode, versionName,
 		); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
