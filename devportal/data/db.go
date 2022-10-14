@@ -138,17 +138,6 @@ func InitializeDB(db *sql.DB) error {
 	) STRICT`); err != nil {
 		return err
 	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_update_review_errors (
-		staging_app_id TEXT NOT NULL,
-		staging_update_session_id TEXT NOT NULL,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (staging_app_id, staging_update_session_id, review_error_id),
-		FOREIGN KEY (staging_app_id, staging_update_session_id)
-			REFERENCES staging_app_updates(id, session_id)
-			ON DELETE CASCADE
-	) STRICT`); err != nil {
-		return err
-	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_update_review_errors (
 		submitted_app_id TEXT NOT NULL REFERENCES submitted_updates(id) ON DELETE CASCADE,
 		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
