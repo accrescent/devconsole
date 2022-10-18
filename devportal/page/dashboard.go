@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/go-github/v47/github"
+	"github.com/google/go-github/v48/github"
 
 	"github.com/accrescent/devportal/config"
 )
