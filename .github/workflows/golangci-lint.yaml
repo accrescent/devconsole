@@ -16,7 +16,9 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           working-directory: devportal
+          args: --timeout 2m
       - name: Lint reposerver
         uses: golangci/golangci-lint-action@v3
         with:
           working-directory: reposerver
+          args: --timeout 2m
