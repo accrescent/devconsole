@@ -99,7 +99,7 @@ func Dashboard(c *gin.Context) {
 	}
 	reviewUpdates := make(map[string][]string)
 	if isReviewer {
-		ids, err := db.Query(`SELECT id FROM submitted_Updates WHERE EXISTS (
+		ids, err := db.Query(`SELECT id FROM submitted_updates WHERE EXISTS (
 			SELECT 1 FROM submitted_update_review_errors
 			WHERE id = submitted_app_id
 		)`)
