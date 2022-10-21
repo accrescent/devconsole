@@ -14,20 +14,20 @@ import (
 func SubmitAppUpdate(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	sessionID := c.MustGet("session_id").(string)
-	stagingAppID, err := c.Cookie(stagingUpdateAppIDCookie)
+	stagingUpdateID, err := c.Cookie(stagingUpdateIDCookie)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	var label, appPath, versionName string
+	var appID, label, appPath, versionName string
 	var versionCode int
 	if err := db.QueryRow(
-		`SELECT label, version_code, version_name, path
+		`SELECT app_id, label, version_code, version_name, path
 		FROM staging_app_updates
 		WHERE id = ? AND session_id = ?`,
-		stagingAppID, sessionID,
-	).Scan(&label, &versionCode, &versionName, &appPath); err != nil {
+		stagingUpdateID, sessionID,
+	).Scan(&appID, &label, &versionCode, &versionName, &appPath); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
@@ -40,7 +40,7 @@ func SubmitAppUpdate(c *gin.Context) {
 		SELECT review_error_id
 		FROM staging_update_review_errors
 		WHERE staging_app_id = ?
-	`, stagingAppID)
+	`, stagingUpdateID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -63,9 +63,9 @@ func SubmitAppUpdate(c *gin.Context) {
 	}
 	if len(reviewErrors) > 0 {
 		if _, err := tx.Exec(
-			`REPLACE INTO submitted_updates (id, label, version_code, version_name, path)
+			`INSERT INTO submitted_updates (app_id, label, version_code, version_name, path)
 			VALUES (?, ?, ?, ?, ?)`,
-			stagingAppID, label, versionCode, versionName, appPath,
+			appID, label, versionCode, versionName, appPath,
 		); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			if err := tx.Rollback(); err != nil {
@@ -80,7 +80,7 @@ func SubmitAppUpdate(c *gin.Context) {
 		var params []interface{}
 		for _, rError := range reviewErrors {
 			inserts = append(inserts, "(?, ?)")
-			params = append(params, stagingAppID, rError)
+			params = append(params, stagingUpdateID, rError)
 		}
 		insertQuery = insertQuery + strings.Join(inserts, ",")
 		if _, err := tx.Exec(insertQuery, params...); err != nil {
@@ -103,7 +103,7 @@ func SubmitAppUpdate(c *gin.Context) {
 			return
 		}
 
-		if err := publish(c, stagingAppID, versionCode, versionName,
+		if err := publish(c, appID, versionCode, versionName,
 			quality.AppUpdate, appPath,
 		); err != nil {
 			if err := tx.Rollback(); err != nil {
@@ -113,8 +113,8 @@ func SubmitAppUpdate(c *gin.Context) {
 		}
 	}
 	if _, err := tx.Exec(
-		"DELETE FROM staging_app_updates WHERE id = ? AND session_id = ?",
-		stagingAppID, sessionID,
+		"DELETE FROM staging_app_updates WHERE app_id = ? AND version_code = ?",
+		appID, versionCode,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {

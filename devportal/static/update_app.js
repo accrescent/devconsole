@@ -13,8 +13,8 @@ document.getElementById("update_app_form").onsubmit = event => {
     const data = new FormData();
     data.append("file", input.files[0]);
 
-    fetch(`/api/apps/${appId}`, {
-        method: "PUT",
+    fetch(`/api/apps/${appId}/updates`, {
+        method: "POST",
         mode: "same-origin",
         body: data,
     }).then(resp => {
@@ -52,7 +52,10 @@ document.getElementById("update_app_form").onsubmit = event => {
 };
 
 document.getElementById("submit").onclick = () => {
-    fetch(`/api/apps/${appId}`, { method: "PATCH", mode: "same-origin" }).then(resp => {
+    fetch(`/api/apps/${appId}/updates`, {
+        method: "PATCH",
+        mode: "same-origin",
+    }).then(resp => {
         if (!resp.ok) {
             return Promise.reject();
         }

@@ -20,7 +20,7 @@
         <script
             src="/review.js"
             type="module"
-            integrity="sha256-YhyxtiS4RBhJt1XHxIc3rkc0zId1ucQoTH6lBjWnF48=">
+            integrity="sha256-/DcpGENJWxwJf8sjNCUenR5LQOTLu6sOgeXItXj5CuM=">
         </script>
         {{end}}
     </head>
@@ -99,9 +99,17 @@
         <h3>App updates pending review</h3>
         {{if .pending_review_updates}}
         <ul>
-            {{range $appID, $errors := .pending_review_updates}}
+            {{range $app, $errors := .pending_review_updates}}
             <li>
-                {{$appID}}<button type="button" name="approve_update" value="{{$appID}}">Approve</button>
+                {{$app.ID}} {{$app.VersionCode}}
+                <button
+                    type="button"
+                    name="approve_update"
+                    value="{{$app.ID}}"
+                    data-version="{{$app.VersionCode}}"
+                >
+                    Approve
+                </button>
                 <ul>
                     {{range $errors}}
                     <li>{{ . }}</li>

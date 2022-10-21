@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -51,30 +52,6 @@ func UpdateApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	// Delete app after 5 minutes if not submitted
-	cCp := c.Copy()
-	go func() {
-		time.Sleep(5 * time.Minute)
-
-		var unsubmitted bool
-		if err := db.QueryRow(
-			"SELECT EXISTS (SELECT 1 FROM staging_app_updates WHERE id = ?)",
-			appID,
-		).Scan(&unsubmitted); err != nil {
-			_ = cCp.Error(err)
-			return
-		}
-
-		if unsubmitted {
-			if _, err := db.Exec(
-				"DELETE FROM staging_app_updates WHERE id = ?",
-				appID,
-			); err != nil {
-				_ = cCp.Error(err)
-			}
-			os.RemoveAll(dir)
-		}
-	}()
 
 	// We've received the (supposed) APK set. Now extract the app metadata.
 	apk, err := apkFromAPKSet(filename)
@@ -111,25 +88,33 @@ func UpdateApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if _, err := tx.Exec(
-		`REPLACE INTO staging_app_updates (id, session_id, label, version_code, version_name, path)
+	res, err := tx.Exec(
+		`REPLACE INTO staging_app_updates (
+			app_id, session_id, label, version_code, version_name, path
+		)
 		VALUES (?, ?, ?, ?, ?, ?)`,
 		m.Package, sessionID, m.Application.Label, m.VersionCode, m.VersionName, filename,
-	); err != nil {
+	)
+	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {
 			_ = c.Error(err)
 		}
 		return
 	}
+	updateID, err := res.LastInsertId()
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 	if len(reviewErrors) > 0 {
 		insertQuery := `INSERT INTO staging_update_review_errors
-		(staging_app_id, staging_update_session_id, review_error_id) VALUES `
+		(staging_app_id, review_error_id) VALUES `
 		var inserts []string
 		var params []interface{}
 		for _, rError := range reviewErrors {
-			inserts = append(inserts, "(?, ?, ?)")
-			params = append(params, m.Package, sessionID, rError)
+			inserts = append(inserts, "(?, ?)")
+			params = append(params, updateID, rError)
 		}
 		insertQuery = insertQuery + strings.Join(inserts, ",")
 		if _, err := tx.Exec(insertQuery, params...); err != nil {
@@ -144,9 +129,34 @@ func UpdateApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+	// Delete app after 5 minutes if not submitted
+	cCp := c.Copy()
+	go func() {
+		time.Sleep(5 * time.Minute)
+
+		var unsubmitted bool
+		if err := db.QueryRow(
+			"SELECT EXISTS (SELECT 1 FROM staging_app_updates WHERE id = ?)",
+			updateID,
+		).Scan(&unsubmitted); err != nil {
+			_ = cCp.Error(err)
+			return
+		}
+
+		if unsubmitted {
+			if _, err := db.Exec(
+				"DELETE FROM staging_app_updates WHERE id = ?",
+				updateID,
+			); err != nil {
+				_ = cCp.Error(err)
+			}
+			os.RemoveAll(dir)
+		}
+	}()
 
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie(stagingUpdateAppIDCookie, m.Package, 5*60, "/", "", true, true) // Max-Age 5 min
+	// Max-Age 5 minutes
+	c.SetCookie(stagingUpdateIDCookie, strconv.FormatInt(updateID, 10), 5*60, "/", "", true, true)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id":            m.Package,

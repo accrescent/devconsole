@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -13,18 +14,32 @@ import (
 func ApproveUpdate(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	appID := c.Param("id")
+	version := c.Param("version")
+	versionCode, err := strconv.Atoi(version)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
-	var versionCode int
+	var firstUpdateVersion int
 	var versionName, path string
 	if err := db.QueryRow(
-		"SELECT version_code, version_name, path FROM submitted_updates WHERE id = ?",
+		`SELECT (SELECT MIN(version_code) FROM submitted_updates), version_name, path
+		FROM submitted_updates
+		WHERE app_id = ? AND version_code = ?`,
 		appID,
-	).Scan(&versionCode, &versionName, &path); err != nil {
+		versionCode,
+	).Scan(&firstUpdateVersion, &versionName, &path); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 		}
+		return
+	}
+	// Prohibit approving updates out-of-order
+	if versionCode != firstUpdateVersion {
+		c.AbortWithStatus(http.StatusConflict)
 		return
 	}
 
@@ -44,7 +59,11 @@ func ApproveUpdate(c *gin.Context) {
 		}
 		return
 	}
-	if _, err := tx.Exec("DELETE FROM submitted_updates WHERE id = ?", appID); err != nil {
+	if _, err := tx.Exec(
+		"DELETE FROM submitted_updates WHERE app_id = ? AND version_code = ?",
+		appID,
+		versionCode,
+	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {
 			_ = c.Error(err)

@@ -78,10 +78,10 @@ func main() {
 	auth.POST("/api/logout", api.Logout)
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps", api.SubmitApp)
-	update.PUT("/api/apps/:id", api.UpdateApp)
-	update.PATCH("/api/apps/:id", api.SubmitAppUpdate)
+	update.POST("/api/apps/:id/updates", api.UpdateApp)
+	update.PATCH("/api/apps/:id/updates", api.SubmitAppUpdate)
 	auth.POST("/api/apps/approve", middleware.ReviewerRequired(), api.ApproveApp)
-	auth.POST("/api/apps/:id/approve", middleware.ReviewerRequired(), api.ApproveUpdate)
+	auth.POST("/api/apps/:id/updates/:version/approve", middleware.ReviewerRequired(), api.ApproveUpdate)
 	auth.POST("/api/apps/:id", middleware.SignerRequired(), api.PublishApp)
 
 	srv := &http.Server{
