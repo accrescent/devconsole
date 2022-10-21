@@ -50,8 +50,11 @@ func ApproveUpdate(c *gin.Context) {
 	}
 
 	if _, err := tx.Exec(
-		"UPDATE published_apps SET version_code = ?, version_name = ?",
+		`UPDATE published_apps
+		SET version_code = ?, version_name = ?
+		WHERE id = ?`,
 		versionCode, versionName,
+		appID,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {
