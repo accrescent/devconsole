@@ -75,7 +75,7 @@ func main() {
 	auth.GET("/apps/:id", page.AppInfo)
 	update.GET("/apps/:id/update", page.UpdateApp)
 	auth.POST("/api/register", api.Register)
-	auth.POST("/api/logout", api.Logout)
+	auth.POST("/api/logout", api.LogOut)
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps", api.SubmitApp)
 	update.POST("/api/apps/:id/updates", api.UpdateApp)

@@ -9,7 +9,7 @@ import (
 	"github.com/accrescent/devportal/auth"
 )
 
-func Logout(c *gin.Context) {
+func LogOut(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	sessionID := c.MustGet("session_id").(string)
 
