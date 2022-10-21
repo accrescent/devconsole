@@ -18,7 +18,7 @@ import (
 
 func UpdateApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	sessionID := c.MustGet("session_id").(string)
+	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("id")
 
 	var versionCode int
@@ -90,10 +90,10 @@ func UpdateApp(c *gin.Context) {
 	}
 	res, err := tx.Exec(
 		`REPLACE INTO staging_app_updates (
-			app_id, session_id, label, version_code, version_name, path
+			app_id, user_gh_id, label, version_code, version_name, path
 		)
 		VALUES (?, ?, ?, ?, ?, ?)`,
-		m.Package, sessionID, m.Application.Label, m.VersionCode, m.VersionName, filename,
+		m.Package, ghID, m.Application.Label, m.VersionCode, m.VersionName, filename,
 	)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)

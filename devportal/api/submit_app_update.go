@@ -13,7 +13,7 @@ import (
 
 func SubmitAppUpdate(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	sessionID := c.MustGet("session_id").(string)
+	ghID := c.MustGet("gh_id").(int64)
 	stagingUpdateID, err := c.Cookie(stagingUpdateIDCookie)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
@@ -25,8 +25,8 @@ func SubmitAppUpdate(c *gin.Context) {
 	if err := db.QueryRow(
 		`SELECT app_id, label, version_code, version_name, path
 		FROM staging_app_updates
-		WHERE id = ? AND session_id = ?`,
-		stagingUpdateID, sessionID,
+		WHERE id = ? AND user_gh_id = ?`,
+		stagingUpdateID, ghID,
 	).Scan(&appID, &label, &versionCode, &versionName, &appPath); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
