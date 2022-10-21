@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mattn/go-sqlite3"
 
 	"github.com/accrescent/devportal/quality"
 )
@@ -67,7 +68,11 @@ func SubmitAppUpdate(c *gin.Context) {
 			VALUES (?, ?, ?, ?, ?)`,
 			appID, label, versionCode, versionName, appPath,
 		); err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintUnique) {
+				_ = c.AbortWithError(http.StatusConflict, err)
+			} else {
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
+			}
 			if err := tx.Rollback(); err != nil {
 				_ = c.Error(err)
 			}
