@@ -46,12 +46,12 @@ func InitializeDB(db *sql.DB) error {
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_apps (
 		id TEXT NOT NULL,
-		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
 		path TEXT NOT NULL,
-		PRIMARY KEY (id, session_id)
+		PRIMARY KEY (id, user_gh_id)
 	) STRICT`); err != nil {
 		return err
 	}
@@ -65,11 +65,11 @@ func InitializeDB(db *sql.DB) error {
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_review_errors (
 		staging_app_id TEXT NOT NULL,
-		staging_app_session_id TEXT NOT NULL,
+		staging_app_user_gh_id TEXT NOT NULL,
 		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (staging_app_id, staging_app_session_id, review_error_id),
-		FOREIGN KEY (staging_app_id, staging_app_session_id)
-			REFERENCES staging_apps(id, session_id)
+		PRIMARY KEY (staging_app_id, staging_app_user_gh_id, review_error_id),
+		FOREIGN KEY (staging_app_id, staging_app_user_gh_id)
+			REFERENCES staging_apps(id, user_gh_id)
 			ON DELETE CASCADE
 	) STRICT`); err != nil {
 		return err
@@ -117,7 +117,7 @@ func InitializeDB(db *sql.DB) error {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_updates (
 		id INTEGER PRIMARY KEY,
 		app_id TEXT NOT NULL REFERENCES published_apps(id) ON DELETE CASCADE,
-		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,

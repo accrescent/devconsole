@@ -16,7 +16,7 @@ import (
 
 func NewApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	sessionID := c.MustGet("session_id").(string)
+	ghID := c.MustGet("gh_id").(int64)
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -42,8 +42,8 @@ func NewApp(c *gin.Context) {
 
 		var unsubmitted bool
 		if err := db.QueryRow(
-			"SELECT EXISTS (SELECT 1 FROM staging_apps WHERE session_id = ? AND path = ?)",
-			sessionID, filename,
+			"SELECT EXISTS (SELECT 1 FROM staging_apps WHERE user_gh_id = ? AND path = ?)",
+			ghID, filename,
 		).Scan(&unsubmitted); err != nil {
 			_ = cCp.Error(err)
 			return
@@ -51,8 +51,8 @@ func NewApp(c *gin.Context) {
 
 		if unsubmitted {
 			if _, err := db.Exec(
-				"DELETE FROM staging_apps WHERE session_id = ? AND path = ?",
-				sessionID, filename,
+				"DELETE FROM staging_apps WHERE user_gh_id = ? AND path = ?",
+				ghID, filename,
 			); err != nil {
 				_ = cCp.Error(err)
 			}
@@ -88,9 +88,9 @@ func NewApp(c *gin.Context) {
 		return
 	}
 	if _, err := tx.Exec(
-		`REPLACE INTO staging_apps (id, session_id, label, version_code, version_name, path)
+		`REPLACE INTO staging_apps (id, user_gh_id, label, version_code, version_name, path)
 		VALUES (?, ?, ?, ?, ?, ?)`,
-		m.Package, sessionID, m.Application.Label, m.VersionCode, m.VersionName, filename,
+		m.Package, ghID, m.Application.Label, m.VersionCode, m.VersionName, filename,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {
@@ -100,12 +100,12 @@ func NewApp(c *gin.Context) {
 	}
 	if len(reviewErrors) > 0 {
 		insertQuery := `INSERT INTO staging_app_review_errors
-		(staging_app_id, staging_app_session_id, review_error_id) VALUES `
+		(staging_app_id, staging_app_user_gh_id, review_error_id) VALUES `
 		var inserts []string
 		var params []interface{}
 		for _, rError := range reviewErrors {
 			inserts = append(inserts, "(?, ?, ?)")
-			params = append(params, m.Package, sessionID, rError)
+			params = append(params, m.Package, ghID, rError)
 		}
 		insertQuery = insertQuery + strings.Join(inserts, ",")
 		if _, err := tx.Exec(insertQuery, params...); err != nil {

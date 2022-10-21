@@ -12,7 +12,6 @@ import (
 
 func SubmitApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	sessionID := c.MustGet("session_id").(string)
 	ghID := c.MustGet("gh_id").(int64)
 	stagingAppID, err := c.Cookie(stagingAppIDCookie)
 	if err != nil {
@@ -25,8 +24,8 @@ func SubmitApp(c *gin.Context) {
 	if err := db.QueryRow(
 		`SELECT label, version_code, version_name, path
 		FROM staging_apps
-		WHERE id = ? AND session_id = ?`,
-		stagingAppID, sessionID,
+		WHERE id = ? AND user_gh_id = ?`,
+		stagingAppID, ghID,
 	).Scan(&label, &versionCode, &versionName, &path); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
@@ -95,8 +94,8 @@ func SubmitApp(c *gin.Context) {
 		}
 	}
 	if _, err := tx.Exec(
-		"DELETE FROM staging_apps WHERE id = ? AND session_id = ?",
-		stagingAppID, sessionID,
+		"DELETE FROM staging_apps WHERE id = ? AND user_gh_id = ?",
+		stagingAppID, ghID,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {
