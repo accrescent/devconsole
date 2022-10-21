@@ -31,8 +31,12 @@ for (const button of approveUpdateButtons) {
         event.preventDefault();
 
         const appId = button.value;
+        const versionCode = button.dataset.version;
 
-        fetch(`/api/apps/${appId}/approve`, { method: "POST", mode: "same-origin" }).then(resp => {
+        fetch(`/api/apps/${appId}/updates/${versionCode}/approve`, {
+            method: "POST",
+            mode: "same-origin",
+        }).then(resp => {
             if (!resp.ok) {
                 return Promise.reject();
             }

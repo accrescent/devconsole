@@ -97,9 +97,13 @@ func Dashboard(c *gin.Context) {
 			reviewApps[appID] = rErrors
 		}
 	}
-	reviewUpdates := make(map[string][]string)
+	type Update struct {
+		ID          string
+		VersionCode int
+	}
+	reviewUpdates := make(map[Update][]string)
 	if isReviewer {
-		ids, err := db.Query(`SELECT id FROM submitted_updates WHERE EXISTS (
+		apps, err := db.Query(`SELECT id, app_id, version_code FROM submitted_updates WHERE EXISTS (
 			SELECT 1 FROM submitted_update_review_errors
 			WHERE id = submitted_app_id
 		)`)
@@ -107,11 +111,12 @@ func Dashboard(c *gin.Context) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
-		defer ids.Close()
+		defer apps.Close()
 
-		for ids.Next() {
+		for apps.Next() {
+			var id, versionCode int
 			var appID string
-			if err := ids.Scan(&appID); err != nil {
+			if err := apps.Scan(&id, &appID, &versionCode); err != nil {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
 				return
 			}
@@ -119,7 +124,7 @@ func Dashboard(c *gin.Context) {
 			errors, err := db.Query(`SELECT review_error_id
 				FROM submitted_update_review_errors
 				WHERE submitted_app_id = ?
-			`, appID)
+			`, id)
 			if err != nil {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
 				return
@@ -135,7 +140,12 @@ func Dashboard(c *gin.Context) {
 				rErrors = append(rErrors, rError)
 			}
 
-			reviewUpdates[appID] = rErrors
+			update := Update{
+				ID:          appID,
+				VersionCode: versionCode,
+			}
+
+			reviewUpdates[update] = rErrors
 		}
 	}
 
