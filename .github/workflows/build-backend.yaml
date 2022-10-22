@@ -1,4 +1,4 @@
-name: Build application
+name: Build backend
 
 on: [push, pull_request]
 
