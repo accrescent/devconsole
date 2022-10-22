@@ -25,6 +25,7 @@ import (
 
 func main() {
 	r := gin.New()
+	r.Use(gin.Logger())
 	err := r.SetTrustedProxies(nil)
 	if err != nil {
 		log.Fatal(err)
