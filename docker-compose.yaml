@@ -3,6 +3,8 @@ services:
   portal:
     build: devportal
     env_file: devportal/.env
+  web:
+    build: web
   repo:
     build: reposerver
     env_file: reposerver/.env
