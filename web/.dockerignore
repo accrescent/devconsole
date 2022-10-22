@@ -1,0 +1,11 @@
+*
+
+!/.browserslistrc
+!/angular.json
+!/karma.conf.js
+!/package-lock.json
+!/package.json
+!/src
+!/tsconfig.app.json
+!/tsconfig.json
+!/tsconfig.spec.json
