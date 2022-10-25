@@ -15,6 +15,5 @@ services:
       - ./devportal/nginx/dev.conf:/etc/nginx/nginx.conf
       - ./devportal/nginx/security.conf:/etc/nginx/security.conf
       - ./certs:/etc/nginx/certs
-      - ./devportal/static:/usr/share/nginx/html
     ports:
       - '8080:443'
