@@ -20,7 +20,6 @@ import (
 	"github.com/accrescent/devportal/config"
 	"github.com/accrescent/devportal/data"
 	"github.com/accrescent/devportal/middleware"
-	"github.com/accrescent/devportal/page"
 )
 
 func main() {
@@ -57,24 +56,15 @@ func main() {
 		APIKey:         os.Getenv("API_KEY"),
 	}
 
-	r.LoadHTMLGlob("page/templates/*.html")
-
 	r.Use(middleware.DB(db))
 	r.Use(middleware.OAuth2Config(oauth2Conf))
 	r.Use(middleware.Config(conf))
 
 	r.GET("/auth/github", auth.GitHub)
 	r.GET("/auth/github/callback", auth.GitHubCallback)
-	r.StaticFile("/auth/redirect/register", "./page/static/redirect_register.html")
-	r.StaticFile("/auth/redirect/dashboard", "./page/static/redirect_dashboard.html")
 
 	auth := r.Group("/", middleware.AuthRequired())
 	update := auth.Group("/", middleware.UserCanUpdateRequired())
-	auth.GET("/register", page.Register)
-	auth.GET("/dashboard", page.Dashboard)
-	auth.StaticFile("/apps/new", "./page/static/new_app.html")
-	auth.GET("/apps/:id", page.AppInfo)
-	update.GET("/apps/:id/update", page.UpdateApp)
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.LogOut)
 	auth.POST("/api/apps", api.NewApp)
