@@ -8,8 +8,6 @@ COPY . .
 
 RUN npm install
 
-RUN ng build
+CMD ng serve --host 0.0.0.0 --disable-host-check
 
-FROM nginx:alpine
-
-COPY --from=build /app/dist/web /usr/share/nginx/html
+EXPOSE 4200
