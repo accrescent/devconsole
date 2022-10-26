@@ -114,6 +114,6 @@ func GitHubCallback(c *gin.Context) {
 	if registered {
 		c.Redirect(http.StatusFound, "/auth/redirect/dashboard")
 	} else {
-		c.Redirect(http.StatusFound, "/auth/redirect/register")
+		c.Redirect(http.StatusFound, "/register")
 	}
 }

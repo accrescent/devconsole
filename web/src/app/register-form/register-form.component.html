@@ -1,0 +1,15 @@
+<h2>Sign up</h2>
+<h4>Choose your preferred email</h4>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div *ngFor="let email of emails; let i = index">
+        <input
+            type="radio"
+            formControlName="email"
+            value="{{ email }}"
+            id="email-{{ i }}">
+        <label for="email-{{ i }}">{{ email }}</label>
+    </div>
+    <br>
+    <button type="submit">Sign up</button>
+</form>

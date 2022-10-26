@@ -37,13 +37,6 @@ func InitializeDB(db *sql.DB) error {
 	) STRICT`); err != nil {
 		return err
 	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS usable_email_cache (
-		session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-		email TEXT NOT NULL,
-		PRIMARY KEY (session_id, email)
-	) STRICT`); err != nil {
-		return err
-	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_apps (
 		id TEXT NOT NULL,
 		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
