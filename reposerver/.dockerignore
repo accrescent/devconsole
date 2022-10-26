@@ -1,0 +1,7 @@
+*
+
+!/api
+!/auth_required.go
+!/go.mod
+!/go.sum
+!/main.go
