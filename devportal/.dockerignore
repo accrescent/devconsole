@@ -1,0 +1,11 @@
+*
+
+!/api
+!/auth
+!/config
+!/data
+!/go.mod
+!/go.sum
+!/main.go
+!/middleware
+!/quality
