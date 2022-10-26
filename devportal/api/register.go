@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v48/github"
+	"github.com/mattn/go-sqlite3"
 	"golang.org/x/exp/slices"
 
 	"github.com/accrescent/devportal/data"
@@ -36,21 +37,15 @@ func Register(c *gin.Context) {
 	}
 
 	// Register user
-	res, err := db.Exec(
+	if _, err := db.Exec(
 		"INSERT INTO users (gh_id, email) VALUES (?, ?)",
 		ghID, input.Email,
-	)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	if rows != 1 {
-		_ = c.AbortWithError(http.StatusConflict, errors.New("user already exists"))
+	); err != nil {
+		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
+			_ = c.AbortWithError(http.StatusConflict, err)
+		} else {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+		}
 		return
 	}
 
