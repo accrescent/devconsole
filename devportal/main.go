@@ -65,6 +65,7 @@ func main() {
 
 	auth := r.Group("/", middleware.AuthRequired())
 	update := auth.Group("/", middleware.UserCanUpdateRequired())
+	auth.GET("/api/emails", api.GetEmails)
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.LogOut)
 	auth.POST("/api/apps", api.NewApp)

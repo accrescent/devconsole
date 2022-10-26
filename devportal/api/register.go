@@ -6,12 +6,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-github/v48/github"
+	"golang.org/x/exp/slices"
+
+	"github.com/accrescent/devportal/data"
 )
 
 func Register(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	sessionID := c.MustGet("session_id").(string)
 	ghID := c.MustGet("gh_id").(int64)
+	ghClient := c.MustGet("gh_client").(*github.Client)
 
 	var input struct {
 		Email string `json:"email" binding:"required"`
@@ -20,26 +24,13 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// Verify user is allowed to register with submitted email
-	var valid bool
-	if err := db.QueryRow(
-		`SELECT EXISTS (SELECT 1
-		FROM usable_email_cache
-		WHERE session_id = ?
-		AND email = ?
-	)`, sessionID, input.Email).Scan(&valid); err != nil {
+	// Verify user is allowed to register with the submitted email
+	usableEmails, err := data.GetUsableEmails(c, ghClient)
+	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if valid {
-		if _, err := db.Exec(
-			"DELETE FROM usable_email_cache WHERE session_id = ?",
-			sessionID, input.Email,
-		); err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			return
-		}
-	} else {
+	if !slices.Contains(usableEmails, input.Email) {
 		_ = c.AbortWithError(http.StatusForbidden, errors.New("email not usable"))
 		return
 	}
