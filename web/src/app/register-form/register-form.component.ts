@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NonNullableFormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { RegisterService } from '../register.service';
 import { Email } from '../email';
@@ -15,7 +16,11 @@ export class RegisterFormComponent implements OnInit {
     });
     emails: string[] = [];
 
-    constructor(private fb: NonNullableFormBuilder, private registerService: RegisterService) {}
+    constructor(
+        private fb: NonNullableFormBuilder,
+        private registerService: RegisterService,
+        private router: Router,
+    ) {}
 
     ngOnInit(): void {
         this.registerService.getEmails().subscribe(emails =>
@@ -25,6 +30,8 @@ export class RegisterFormComponent implements OnInit {
 
     onSubmit(): void {
         const email: string = this.form.getRawValue().email;
-        this.registerService.register({ email }).subscribe();
+        this.registerService.register({ email }).subscribe(_ =>
+            this.router.navigate(['dashboard'])
+        );
     }
 }
