@@ -1,0 +1,8 @@
+#main {
+    height: 100vh;
+}
+
+mat-card {
+    width: fit-content;
+    cursor: pointer;
+}
