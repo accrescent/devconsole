@@ -1,0 +1,21 @@
+<mat-toolbar>
+    <button mat-icon-button (click)="sidenav.toggle()">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <h2>Accrescent Developer Portal</h2>
+</mat-toolbar>
+
+<mat-sidenav-container id="main">
+    <mat-sidenav #sidenav mode="side" opened="true">
+        <mat-nav-list>
+            <a mat-list-item routerLink="/dashboard">Dashboard</a>
+        </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-card routerLink="/new-app">
+        <mat-card-title>New app</mat-card-title>
+        <mat-card-content>
+            <p>Submit a new app to Accrescent.</p>
+        </mat-card-content>
+    </mat-card>
+</mat-sidenav-container>
