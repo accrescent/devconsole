@@ -15,7 +15,7 @@ export class AppService {
 
     uploadApp(app: File): Observable<App> {
         const formData = new FormData();
-        formData.append("file", app);
+        formData.append("app", app);
 
         return this.http.post<App>(this.appsUrl, formData);
     }
