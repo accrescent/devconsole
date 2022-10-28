@@ -57,8 +57,24 @@ func SubmitApp(c *gin.Context) {
 		return
 	}
 	if _, err := tx.Exec(
-		`INSERT INTO submitted_apps (id, gh_id, label, version_code, version_name, path)
-		VALUES (?, ?, ?, ?, ?, ?)`,
+		`INSERT INTO submitted_apps (
+			id,
+			gh_id,
+			label,
+			version_code,
+			version_name,
+			reviewer_gh_id,
+			path
+		)
+		VALUES (
+			?,
+			?,
+			?,
+			?,
+			?,
+			(SELECT user_gh_id FROM reviewers ORDER BY RANDOM() LIMIT 1),
+			?
+		)`,
 		appID, ghID, label, versionCode, versionName, path,
 	); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
