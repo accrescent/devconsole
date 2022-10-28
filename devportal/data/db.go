@@ -80,6 +80,7 @@ func InitializeDB(db *sql.DB) error {
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
+		reviewer_gh_id INT NOT NULL REFERENCES reviewers(user_gh_id),
 		path TEXT NOT NULL
 	) STRICT`); err != nil {
 		return err
@@ -125,6 +126,7 @@ func InitializeDB(db *sql.DB) error {
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
+		reviewer_gh_id INT NOT NULL REFERENCES reviewers(user_gh_id),
 		path TEXT NOT NULL,
 		UNIQUE (app_id, version_code)
 	) STRICT`); err != nil {
