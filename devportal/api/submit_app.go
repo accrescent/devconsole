@@ -13,7 +13,7 @@ import (
 func SubmitApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	ghID := c.MustGet("gh_id").(int64)
-	stagingAppID := c.Param("id")
+	appID := c.Param("id")
 
 	var label, path, versionName string
 	var versionCode int
@@ -21,7 +21,7 @@ func SubmitApp(c *gin.Context) {
 		`SELECT label, version_code, version_name, path
 		FROM staging_apps
 		WHERE id = ? AND user_gh_id = ?`,
-		stagingAppID, ghID,
+		appID, ghID,
 	).Scan(&label, &versionCode, &versionName, &path); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
@@ -35,7 +35,7 @@ func SubmitApp(c *gin.Context) {
 		SELECT review_error_id
 		FROM staging_app_review_errors
 		WHERE staging_app_id = ?
-	`, stagingAppID)
+	`, appID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -59,7 +59,7 @@ func SubmitApp(c *gin.Context) {
 	if _, err := tx.Exec(
 		`INSERT INTO submitted_apps (id, gh_id, label, version_code, version_name, path)
 		VALUES (?, ?, ?, ?, ?, ?)`,
-		stagingAppID, ghID, label, versionCode, versionName, path,
+		appID, ghID, label, versionCode, versionName, path,
 	); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
 			_ = c.AbortWithError(http.StatusConflict, err)
@@ -78,7 +78,7 @@ func SubmitApp(c *gin.Context) {
 		var params []interface{}
 		for _, rError := range reviewErrors {
 			inserts = append(inserts, "(?, ?)")
-			params = append(params, stagingAppID, rError)
+			params = append(params, appID, rError)
 		}
 		insertQuery = insertQuery + strings.Join(inserts, ",")
 		if _, err := tx.Exec(insertQuery, params...); err != nil {
@@ -91,7 +91,7 @@ func SubmitApp(c *gin.Context) {
 	}
 	if _, err := tx.Exec(
 		"DELETE FROM staging_apps WHERE id = ? AND user_gh_id = ?",
-		stagingAppID, ghID,
+		appID, ghID,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {
