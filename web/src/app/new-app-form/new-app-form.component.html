@@ -1,0 +1,18 @@
+<input #fileinput type="file" (change)="onFileChange($event)">
+<button
+    type="button"
+    mat-flat-button
+    color="primary"
+    (click)="fileinput.click()">
+    Select APK set
+</button>
+
+<form *ngIf="app" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <h2>App info</h2>
+    <p>App ID: {{ app.id }}</p>
+    <p>Display name: {{ app.label }}</p>
+    <p>Version code: {{ app.version_code }}</p>
+    <p>Version name: {{ app.version_name }}</p>
+
+    <button type="submit" mat-flat-button color="primary">Submit</button>
+</form>
