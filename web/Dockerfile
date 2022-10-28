@@ -10,6 +10,10 @@ RUN npm install
 
 COPY . .
 
-CMD ng serve --host 0.0.0.0 --disable-host-check
+RUN ng build --configuration development
 
-EXPOSE 4200
+FROM nginx:alpine
+
+COPY nginx.conf /etc/nginx/nginx.conf
+
+COPY --from=build /app/dist/web /usr/share/nginx/html
