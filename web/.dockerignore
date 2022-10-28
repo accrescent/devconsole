@@ -3,6 +3,7 @@
 !/.browserslistrc
 !/angular.json
 !/karma.conf.js
+!/nginx.conf
 !/package-lock.json
 !/package.json
 !/src
