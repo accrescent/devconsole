@@ -18,6 +18,8 @@ import { RegisterFormComponent } from './register-form/register-form.component';
 import { LandingComponent } from './landing/landing.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NewAppComponent } from './new-app/new-app.component';
+import { NewAppFormComponent } from './new-app-form/new-app-form.component';
+import { ConsoleLayoutComponent } from './console-layout/console-layout.component';
 
 @NgModule({
     declarations: [
@@ -27,6 +29,8 @@ import { NewAppComponent } from './new-app/new-app.component';
         LandingComponent,
         DashboardComponent,
         NewAppComponent,
+        NewAppFormComponent,
+        ConsoleLayoutComponent,
     ],
     imports: [
         BrowserModule,

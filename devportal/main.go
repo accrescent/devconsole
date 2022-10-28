@@ -69,7 +69,7 @@ func main() {
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.LogOut)
 	auth.POST("/api/apps", api.NewApp)
-	auth.PATCH("/api/apps", api.SubmitApp)
+	auth.PATCH("/api/apps/:id", api.SubmitApp)
 	update.POST("/api/apps/:id/updates", api.UpdateApp)
 	update.PATCH("/api/apps/:id/updates", api.SubmitAppUpdate)
 	auth.POST("/api/apps/approve", middleware.ReviewerRequired(), api.ApproveApp)

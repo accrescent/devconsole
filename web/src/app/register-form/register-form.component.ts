@@ -31,7 +31,7 @@ export class RegisterFormComponent implements OnInit {
     onSubmit(): void {
         const email: string = this.form.getRawValue().email;
         this.registerService.register({ email }).subscribe(_ =>
-            this.router.navigate(['dashboard'])
+            this.router.navigate(['console'])
         );
     }
 }

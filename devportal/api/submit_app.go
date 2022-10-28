@@ -13,11 +13,7 @@ import (
 func SubmitApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	ghID := c.MustGet("gh_id").(int64)
-	stagingAppID, err := c.Cookie(stagingAppIDCookie)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
+	stagingAppID := c.Param("id")
 
 	var label, path, versionName string
 	var versionCode int
