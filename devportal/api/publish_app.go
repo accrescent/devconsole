@@ -13,15 +13,16 @@ import (
 
 func PublishApp(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("id")
 
 	var label, appPath, versionName string
-	var versionCode int
+	var ghID, versionCode int
 	if err := db.QueryRow(
-		"SELECT label, version_code, version_name, path FROM submitted_apps WHERE id = ?",
+		`SELECT gh_id, label, version_code, version_name, path
+		FROM submitted_apps
+		WHERE id = ?`,
 		appID,
-	).Scan(&label, &versionCode, &versionName, &appPath); err != nil {
+	).Scan(&ghID, &label, &versionCode, &versionName, &appPath); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
