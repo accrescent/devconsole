@@ -111,6 +111,13 @@ func SubmitAppUpdate(c *gin.Context) {
 		}
 	} else {
 		// No review necessary, so publish the update immediately.
+		if err := publish(c, appID, versionCode, versionName,
+			quality.AppUpdate, appPath,
+		); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
 		if _, err := tx.Exec(
 			`UPDATE published_apps
 			SET version_code = ?, version_name = ?
@@ -119,15 +126,6 @@ func SubmitAppUpdate(c *gin.Context) {
 			appID,
 		); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			if err := tx.Rollback(); err != nil {
-				_ = c.Error(err)
-			}
-			return
-		}
-
-		if err := publish(c, appID, versionCode, versionName,
-			quality.AppUpdate, appPath,
-		); err != nil {
 			if err := tx.Rollback(); err != nil {
 				_ = c.Error(err)
 			}

@@ -26,6 +26,12 @@ func PublishApp(c *gin.Context) {
 		return
 	}
 
+	// Publish to repository server
+	if err := publish(c, appID, versionCode, versionName, quality.NewApp, appPath); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
 	tx, err := db.Begin()
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -66,15 +72,6 @@ func PublishApp(c *gin.Context) {
 		}
 		return
 	}
-
-	// Publish to repository server
-	if err := publish(c, appID, versionCode, versionName, quality.NewApp, appPath); err != nil {
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
-
 	if err := tx.Commit(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return

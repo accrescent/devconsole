@@ -43,12 +43,16 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
+	if err := publish(c, appID, versionCode, versionName, quality.AppUpdate, path); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
 	tx, err := db.Begin()
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-
 	if _, err := tx.Exec(
 		`UPDATE published_apps
 		SET version_code = ?, version_name = ?
@@ -73,14 +77,6 @@ func ApproveUpdate(c *gin.Context) {
 		}
 		return
 	}
-
-	if err := publish(c, appID, versionCode, versionName, quality.AppUpdate, path); err != nil {
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
-
 	if err := tx.Commit(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
