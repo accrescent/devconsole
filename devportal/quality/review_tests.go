@@ -15,7 +15,7 @@ func RunReviewTests(apk *apk.APK) []string {
 
 	if permissions != nil {
 		for _, permission := range *permissions {
-			if slices.Contains(PermissionReviewBlacklist, permission.Name) {
+			if slices.Contains(permissionReviewBlacklist, permission.Name) {
 				errors = append(errors, permission.Name)
 			}
 		}

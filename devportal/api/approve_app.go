@@ -18,7 +18,7 @@ func ApproveApp(c *gin.Context) {
 	}
 
 	if _, err := db.Exec(
-		"DELETE FROM submitted_app_review_errors WHERE submitted_app_id = ?",
+		"UPDATE submitted_apps SET approved = TRUE WHERE submitted_app_id = ?",
 		json.AppID,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)

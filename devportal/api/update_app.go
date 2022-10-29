@@ -88,12 +88,52 @@ func UpdateApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+	var issueGroupID *int
+	if len(reviewErrors) > 0 {
+		res, err := tx.Exec("INSERT INTO issue_groups DEFAULT VALUES")
+		if err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
+		issueGroupID, err := res.LastInsertId()
+		if err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
+		insertQuery := "INSERT INTO review_errors (id, issue_group_id) VALUES "
+		var inserts []string
+		var params []interface{}
+		for _, rError := range reviewErrors {
+			inserts = append(inserts, "(?, ?)")
+			params = append(params, issueGroupID, rError)
+		}
+		insertQuery = insertQuery + strings.Join(inserts, ",")
+		if _, err := tx.Exec(insertQuery, params...); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
+	}
 	res, err := tx.Exec(
 		`REPLACE INTO staging_app_updates (
-			app_id, user_gh_id, label, version_code, version_name, path
+			app_id, user_gh_id, label, version_code, version_name, path, issue_group_id
 		)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		m.Package, ghID, m.Application.Label, m.VersionCode, m.VersionName, filename,
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		m.Package,
+		ghID,
+		m.Application.Label,
+		m.VersionCode,
+		m.VersionName,
+		filename,
+		issueGroupID,
 	)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -106,24 +146,6 @@ func UpdateApp(c *gin.Context) {
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
-	}
-	if len(reviewErrors) > 0 {
-		insertQuery := `INSERT INTO staging_update_review_errors
-		(staging_app_id, review_error_id) VALUES `
-		var inserts []string
-		var params []interface{}
-		for _, rError := range reviewErrors {
-			inserts = append(inserts, "(?, ?)")
-			params = append(params, updateID, rError)
-		}
-		insertQuery = insertQuery + strings.Join(inserts, ",")
-		if _, err := tx.Exec(insertQuery, params...); err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			if err := tx.Rollback(); err != nil {
-				_ = c.Error(err)
-			}
-			return
-		}
 	}
 	if err := tx.Commit(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)

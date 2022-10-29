@@ -99,13 +99,28 @@ func NewApp(c *gin.Context) {
 		return
 	}
 	if len(reviewErrors) > 0 {
-		insertQuery := `INSERT INTO staging_app_review_errors
-		(staging_app_id, staging_app_user_gh_id, review_error_id) VALUES `
+		res, err := tx.Exec("INSERT INTO issue_groups DEFAULT VALUES")
+		if err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
+		issueGroupID, err := res.LastInsertId()
+		if err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			if err := tx.Rollback(); err != nil {
+				_ = c.Error(err)
+			}
+			return
+		}
+		insertQuery := "INSERT INTO review_errors (id, issue_group_id) VALUES "
 		var inserts []string
 		var params []interface{}
 		for _, rError := range reviewErrors {
-			inserts = append(inserts, "(?, ?, ?)")
-			params = append(params, m.Package, ghID, rError)
+			inserts = append(inserts, "(?, ?)")
+			params = append(params, rError, issueGroupID)
 		}
 		insertQuery = insertQuery + strings.Join(inserts, ",")
 		if _, err := tx.Exec(insertQuery, params...); err != nil {
