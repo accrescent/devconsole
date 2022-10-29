@@ -20,10 +20,10 @@ func RunRejectTests(apk *apk.APK, uploadType UploadType) error {
 			"app target SDK is %d but the minimum is %d",
 			*targetSDK, MIN_TARGET_SDK_NEW_APP,
 		)
-	case uploadType == AppUpdate && *targetSDK < MIN_TARGET_SDK_APP_UPDATE:
+	case uploadType == Update && *targetSDK < MIN_TARGET_SDK_UPDATE:
 		return fmt.Errorf(
 			"app target SDK is %d but the minimum is %d",
-			*targetSDK, MIN_TARGET_SDK_APP_UPDATE,
+			*targetSDK, MIN_TARGET_SDK_UPDATE,
 		)
 	}
 

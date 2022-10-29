@@ -75,7 +75,7 @@ func UpdateApp(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err})
 		return
 	}
-	if err := quality.RunRejectTests(apk, quality.AppUpdate); err != nil {
+	if err := quality.RunRejectTests(apk, quality.Update); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
@@ -123,7 +123,7 @@ func UpdateApp(c *gin.Context) {
 		}
 	}
 	res, err := tx.Exec(
-		`REPLACE INTO staging_app_updates (
+		`REPLACE INTO staging_updates (
 			app_id, user_gh_id, label, version_code, version_name, path, issue_group_id
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -158,7 +158,7 @@ func UpdateApp(c *gin.Context) {
 
 		var unsubmitted bool
 		if err := db.QueryRow(
-			"SELECT EXISTS (SELECT 1 FROM staging_app_updates WHERE id = ?)",
+			"SELECT EXISTS (SELECT 1 FROM staging_updates WHERE id = ?)",
 			updateID,
 		).Scan(&unsubmitted); err != nil {
 			_ = cCp.Error(err)
@@ -167,7 +167,7 @@ func UpdateApp(c *gin.Context) {
 
 		if unsubmitted {
 			if _, err := db.Exec(
-				"DELETE FROM staging_app_updates WHERE id = ?",
+				"DELETE FROM staging_updates WHERE id = ?",
 				updateID,
 			); err != nil {
 				_ = cCp.Error(err)

@@ -85,7 +85,7 @@ func InitializeDB(db *sql.DB) error {
 	) STRICT`); err != nil {
 		return err
 	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_updates (
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_updates (
 		id INTEGER PRIMARY KEY,
 		app_id TEXT NOT NULL REFERENCES published_apps(id) ON DELETE CASCADE,
 		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
