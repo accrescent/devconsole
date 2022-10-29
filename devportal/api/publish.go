@@ -21,7 +21,7 @@ func publish(
 	var method string
 	if uploadType == quality.NewApp {
 		method = "POST"
-	} else if uploadType == quality.AppUpdate {
+	} else if uploadType == quality.Update {
 		method = "PUT"
 	}
 

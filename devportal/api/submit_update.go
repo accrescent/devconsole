@@ -11,7 +11,7 @@ import (
 	"github.com/accrescent/devportal/quality"
 )
 
-func SubmitAppUpdate(c *gin.Context) {
+func SubmitUpdate(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	ghID := c.MustGet("gh_id").(int64)
 	stagingUpdateID, err := c.Cookie(stagingUpdateIDCookie)
@@ -25,7 +25,7 @@ func SubmitAppUpdate(c *gin.Context) {
 	var issueGroupID *int
 	if err := db.QueryRow(
 		`SELECT app_id, label, version_code, version_name, path, issue_group_id
-		FROM staging_app_updates
+		FROM staging_updates
 		WHERE id = ? AND user_gh_id = ?`,
 		stagingUpdateID, ghID,
 	).Scan(&appID, &label, &versionCode, &versionName, &appPath, &issueGroupID); err != nil {
@@ -77,7 +77,7 @@ func SubmitAppUpdate(c *gin.Context) {
 	} else {
 		// No review necessary, so publish the update immediately.
 		if err := publish(c, appID, versionCode, versionName,
-			quality.AppUpdate, appPath,
+			quality.Update, appPath,
 		); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -98,7 +98,7 @@ func SubmitAppUpdate(c *gin.Context) {
 		}
 	}
 	if _, err := tx.Exec(
-		"DELETE FROM staging_app_updates WHERE app_id = ? AND version_code = ?",
+		"DELETE FROM staging_updates WHERE app_id = ? AND version_code = ?",
 		appID, versionCode,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
