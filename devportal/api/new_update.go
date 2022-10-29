@@ -16,7 +16,7 @@ import (
 	"github.com/accrescent/devportal/quality"
 )
 
-func UpdateApp(c *gin.Context) {
+func NewUpdate(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("id")
