@@ -78,7 +78,7 @@ func NewApp(c *gin.Context) {
 	}
 
 	// Run tests whose failures warrant manual review
-	reviewErrors := quality.RunReviewTests(apk)
+	issues := quality.RunReviewTests(apk)
 
 	m := apk.Manifest()
 
@@ -98,7 +98,7 @@ func NewApp(c *gin.Context) {
 		}
 		return
 	}
-	if len(reviewErrors) > 0 {
+	if len(issues) > 0 {
 		res, err := tx.Exec("INSERT INTO issue_groups DEFAULT VALUES")
 		if err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -115,12 +115,12 @@ func NewApp(c *gin.Context) {
 			}
 			return
 		}
-		insertQuery := "INSERT INTO review_errors (id, issue_group_id) VALUES "
+		insertQuery := "INSERT INTO issues (id, issue_group_id) VALUES "
 		var inserts []string
 		var params []interface{}
-		for _, rError := range reviewErrors {
+		for _, issue := range issues {
 			inserts = append(inserts, "(?, ?)")
-			params = append(params, rError, issueGroupID)
+			params = append(params, issue, issueGroupID)
 		}
 		insertQuery = insertQuery + strings.Join(inserts, ",")
 		if _, err := tx.Exec(insertQuery, params...); err != nil {
