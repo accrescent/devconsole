@@ -1,11 +1,6 @@
 package data
 
-import (
-	"database/sql"
-	"strings"
-
-	"github.com/accrescent/devportal/quality"
-)
+import "database/sql"
 
 func OpenDB() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "devportal.db?_fk=yes&_journal=WAL")
@@ -44,33 +39,20 @@ func InitializeDB(db *sql.DB) error {
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
 		path TEXT NOT NULL,
+		issue_group_id INT REFERENCES issue_groups(id),
 		PRIMARY KEY (id, user_gh_id)
 	) STRICT`); err != nil {
 		return err
 	}
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS issue_groups (
+		id INTEGER PRIMARY KEY
+	) STRICT`); err != nil {
+		return err
+	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS review_errors (
-		id TEXT PRIMARY KEY
-	) STRICT`); err != nil {
-		return err
-	}
-	if err := populateReviewErrors(db); err != nil {
-		return err
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_app_review_errors (
-		staging_app_id TEXT NOT NULL,
-		staging_app_user_gh_id TEXT NOT NULL,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (staging_app_id, staging_app_user_gh_id, review_error_id),
-		FOREIGN KEY (staging_app_id, staging_app_user_gh_id)
-			REFERENCES staging_apps(id, user_gh_id)
-			ON DELETE CASCADE
-	) STRICT`); err != nil {
-		return err
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_update_review_errors (
-		staging_app_id INT NOT NULL REFERENCES staging_app_updates(id) ON DELETE CASCADE,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (staging_app_id, review_error_id)
+		id TEXT NOT NULL,
+		issue_group_id INT NOT NULL REFERENCES issue_groups(id),
+		PRIMARY KEY (id, issue_group_id)
 	) STRICT`); err != nil {
 		return err
 	}
@@ -80,15 +62,10 @@ func InitializeDB(db *sql.DB) error {
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
+		issue_group_id INT REFERENCES issue_groups(id),
 		reviewer_gh_id INT NOT NULL REFERENCES reviewers(user_gh_id),
+		approved INT NOT NULL CHECK(approved in (FALSE, TRUE)) DEFAULT FALSE,
 		path TEXT NOT NULL
-	) STRICT`); err != nil {
-		return err
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_app_review_errors (
-		submitted_app_id TEXT NOT NULL REFERENCES submitted_apps(id) ON DELETE CASCADE,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (submitted_app_id, review_error_id)
 	) STRICT`); err != nil {
 		return err
 	}
@@ -116,6 +93,7 @@ func InitializeDB(db *sql.DB) error {
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
 		path TEXT NOT NULL,
+		issue_group_id INT REFERENCES issue_groups(id),
 		UNIQUE (app_id, version_code)
 	) STRICT`); err != nil {
 		return err
@@ -128,31 +106,9 @@ func InitializeDB(db *sql.DB) error {
 		version_name TEXT NOT NULL,
 		reviewer_gh_id INT NOT NULL REFERENCES reviewers(user_gh_id),
 		path TEXT NOT NULL,
+		issue_group_id INT NOT NULL REFERENCES issue_groups(id),
 		UNIQUE (app_id, version_code)
 	) STRICT`); err != nil {
-		return err
-	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_update_review_errors (
-		submitted_app_id INT NOT NULL REFERENCES submitted_updates(id) ON DELETE CASCADE,
-		review_error_id TEXT NOT NULL REFERENCES review_errors(id) ON DELETE CASCADE,
-		PRIMARY KEY (submitted_app_id, review_error_id)
-	) STRICT`); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func populateReviewErrors(db *sql.DB) error {
-	query := "INSERT OR IGNORE INTO review_errors (id) VALUES "
-	var inserts []string
-	var params []interface{}
-	for _, reviewError := range quality.PermissionReviewBlacklist {
-		inserts = append(inserts, "(?)")
-		params = append(params, reviewError)
-	}
-	query = query + strings.Join(inserts, ",")
-	if _, err := db.Exec(query, params...); err != nil {
 		return err
 	}
 

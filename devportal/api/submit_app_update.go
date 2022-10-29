@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
@@ -23,12 +22,13 @@ func SubmitAppUpdate(c *gin.Context) {
 
 	var appID, label, appPath, versionName string
 	var versionCode int
+	var issueGroupID *int
 	if err := db.QueryRow(
-		`SELECT app_id, label, version_code, version_name, path
+		`SELECT app_id, label, version_code, version_name, path, issue_group_id
 		FROM staging_app_updates
 		WHERE id = ? AND user_gh_id = ?`,
 		stagingUpdateID, ghID,
-	).Scan(&appID, &label, &versionCode, &versionName, &appPath); err != nil {
+	).Scan(&appID, &label, &versionCode, &versionName, &appPath, &issueGroupID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
@@ -37,32 +37,12 @@ func SubmitAppUpdate(c *gin.Context) {
 		return
 	}
 
-	rows, err := db.Query(`
-		SELECT review_error_id
-		FROM staging_update_review_errors
-		WHERE staging_app_id = ?
-	`, stagingUpdateID)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	defer rows.Close()
-	var reviewErrors []string
-	for rows.Next() {
-		var reviewError string
-		if err := rows.Scan(&reviewError); err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			return
-		}
-		reviewErrors = append(reviewErrors, reviewError)
-	}
-
 	tx, err := db.Begin()
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if len(reviewErrors) > 0 {
+	if issueGroupID != nil {
 		if _, err := tx.Exec(
 			`INSERT INTO submitted_updates (
 				app_id,
@@ -70,7 +50,8 @@ func SubmitAppUpdate(c *gin.Context) {
 				version_code,
 				version_name,
 				reviewer_gh_id,
-				path
+				path,
+				issue_group_id
 			)
 			VALUES (
 				?,
@@ -78,32 +59,16 @@ func SubmitAppUpdate(c *gin.Context) {
 				?,
 				?,
 				(SELECT user_gh_id FROM reviewers ORDER BY RANDOM() LIMIT 1),
+				?,
 				?
 			)`,
-			appID, label, versionCode, versionName, appPath,
+			appID, label, versionCode, versionName, appPath, issueGroupID,
 		); err != nil {
 			if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintUnique) {
 				_ = c.AbortWithError(http.StatusConflict, err)
 			} else {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
 			}
-			if err := tx.Rollback(); err != nil {
-				_ = c.Error(err)
-			}
-			return
-		}
-
-		insertQuery := `INSERT INTO submitted_update_review_errors
-			(submitted_app_id, review_error_id) VALUES `
-		var inserts []string
-		var params []interface{}
-		for _, rError := range reviewErrors {
-			inserts = append(inserts, "(?, ?)")
-			params = append(params, stagingUpdateID, rError)
-		}
-		insertQuery = insertQuery + strings.Join(inserts, ",")
-		if _, err := tx.Exec(insertQuery, params...); err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			if err := tx.Rollback(); err != nil {
 				_ = c.Error(err)
 			}
