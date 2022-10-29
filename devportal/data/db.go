@@ -49,7 +49,7 @@ func InitializeDB(db *sql.DB) error {
 	) STRICT`); err != nil {
 		return err
 	}
-	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS review_errors (
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS issues (
 		id TEXT NOT NULL,
 		issue_group_id INT NOT NULL REFERENCES issue_groups(id),
 		PRIMARY KEY (id, issue_group_id)
