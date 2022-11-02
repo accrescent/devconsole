@@ -6,11 +6,12 @@ import { NewAppComponent } from './new-app/new-app.component';
 import { RegisterComponent } from './register/register.component';
 import { LandingComponent } from './landing/landing.component';
 import { ConsoleLayoutComponent } from './console-layout/console-layout.component';
+import { AuthGuard } from './auth.guard';
 
 const routes: Routes = [
     { path: '', component: LandingComponent },
     { path: 'register', component: RegisterComponent },
-    { path: 'console', component: ConsoleLayoutComponent, children: [
+    { path: 'console', component: ConsoleLayoutComponent, canActivate: [AuthGuard], children: [
         { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
         { path: 'dashboard', component: DashboardComponent },
         { path: 'new-app', component: NewAppComponent },
