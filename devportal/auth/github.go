@@ -102,6 +102,7 @@ func GitHubCallback(c *gin.Context) {
 
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie(SessionCookie, sidStr, 24*60*60, "/", "", true, true) // Max-Age 1 day
+	c.SetCookie("logged_in", "yes", 24*60*60, "/", "", true, false)
 
 	var registered bool
 	if err = db.QueryRow(
