@@ -22,7 +22,7 @@ func GetPendingApps(c *gin.Context) {
 	dbApps, err := db.Query(
 		`SELECT id, label, version_code, version_name, issue_group_id
 		FROM submitted_apps
-		WHERE reviewer_gh_id = ?`,
+		WHERE reviewer_gh_id = ? AND approved = FALSE`,
 		ghID,
 	)
 	if err != nil {
