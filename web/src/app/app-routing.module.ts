@@ -7,10 +7,12 @@ import { NewAppComponent } from './new-app/new-app.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { ReviewComponent } from './review/review.component';
+import { PublishComponent } from './publish/publish.component';
 import { LandingComponent } from './landing/landing.component';
 import { ConsoleLayoutComponent } from './console-layout/console-layout.component';
 import { AuthGuard } from './auth.guard';
 import { ReviewerGuard } from './reviewer.guard';
+import { PublisherGuard } from './publisher.guard';
 
 const routes: Routes = [
     { path: '', component: LandingComponent },
@@ -21,6 +23,7 @@ const routes: Routes = [
         { path: 'apps', component: AppListComponent },
         { path: 'new-app', component: NewAppComponent },
         { path: 'review', component: ReviewComponent, canActivate: [ReviewerGuard] },
+        { path: 'publish', component: PublishComponent, canActivate: [PublisherGuard] },
     ] },
 ];
 

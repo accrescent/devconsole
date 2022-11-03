@@ -70,6 +70,7 @@ func main() {
 	reviewer.GET("/api/pending-apps", api.GetPendingApps)
 	reviewer.PATCH("/api/pending-apps/:id", api.ApproveApp)
 	reviewer.DELETE("/api/pending-apps/:id", api.RejectApp)
+	auth.GET("/api/approved-apps", middleware.SignerRequired(), api.GetApprovedApps)
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.LogOut)
 	auth.GET("/api/apps", api.GetApps)
