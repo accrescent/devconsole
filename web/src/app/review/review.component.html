@@ -1,0 +1,15 @@
+<mat-card *ngFor="let app of apps">
+    <mat-card-title>{{ app.label }}</mat-card-title>
+    <mat-card-subtitle>{{ app.app_id }}</mat-card-subtitle>
+    <mat-card-content>
+        <h4>Review issues</h4>
+        <ul>
+            <li *ngFor="let issue of app.issues"><code>{{ issue }}</code></li>
+            <li *ngIf="!app.issues">None</li>
+        </ul>
+    </mat-card-content>
+    <mat-card-actions align="end">
+        <button mat-button>Approve</button>
+        <button mat-flat-button color="primary">Reject</button>
+    </mat-card-actions>
+</mat-card>
