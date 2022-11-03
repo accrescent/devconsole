@@ -19,6 +19,10 @@ export class AppService {
         return this.http.get<PendingApp[]>(this.pendingAppsUrl);
     }
 
+    approveApp(appId: string): Observable<void> {
+        return this.http.patch<void>(`${this.pendingAppsUrl}/${appId}`, '');
+    }
+
     uploadApp(app: File): Observable<App> {
         const formData = new FormData();
         formData.append("app", app);
