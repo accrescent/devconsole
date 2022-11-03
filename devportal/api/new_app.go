@@ -87,17 +87,7 @@ func NewApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if _, err := tx.Exec(
-		`REPLACE INTO staging_apps (id, user_gh_id, label, version_code, version_name, path)
-		VALUES (?, ?, ?, ?, ?, ?)`,
-		m.Package, ghID, m.Application.Label, m.VersionCode, m.VersionName, filename,
-	); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
+	var issueGroupID *int64
 	if len(issues) > 0 {
 		res, err := tx.Exec("INSERT INTO issue_groups DEFAULT VALUES")
 		if err != nil {
@@ -107,7 +97,8 @@ func NewApp(c *gin.Context) {
 			}
 			return
 		}
-		issueGroupID, err := res.LastInsertId()
+		groupID, err := res.LastInsertId()
+		issueGroupID = &groupID
 		if err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			if err := tx.Rollback(); err != nil {
@@ -120,7 +111,7 @@ func NewApp(c *gin.Context) {
 		var params []interface{}
 		for _, issue := range issues {
 			inserts = append(inserts, "(?, ?)")
-			params = append(params, issue, issueGroupID)
+			params = append(params, issue, groupID)
 		}
 		insertQuery = insertQuery + strings.Join(inserts, ",")
 		if _, err := tx.Exec(insertQuery, params...); err != nil {
@@ -130,6 +121,31 @@ func NewApp(c *gin.Context) {
 			}
 			return
 		}
+	}
+	if _, err := tx.Exec(
+		`REPLACE INTO staging_apps (
+			id,
+			user_gh_id,
+			label,
+			version_code,
+			version_name,
+			path,
+			issue_group_id
+		)
+		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		m.Package,
+		ghID,
+		m.Application.Label,
+		m.VersionCode,
+		m.VersionName,
+		filename,
+		issueGroupID,
+	); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		if err := tx.Rollback(); err != nil {
+			_ = c.Error(err)
+		}
+		return
 	}
 	if err := tx.Commit(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
