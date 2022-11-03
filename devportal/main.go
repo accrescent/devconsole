@@ -69,6 +69,7 @@ func main() {
 	auth.GET("/api/emails", api.GetEmails)
 	reviewer.GET("/api/pending-apps", api.GetPendingApps)
 	reviewer.PATCH("/api/pending-apps/:id", api.ApproveApp)
+	reviewer.DELETE("/api/pending-apps/:id", api.RejectApp)
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.LogOut)
 	auth.POST("/api/apps", api.NewApp)

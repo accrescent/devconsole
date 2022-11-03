@@ -18,11 +18,17 @@ export class ReviewComponent implements OnInit {
     }
 
     approveApp(appId: string): void {
-        this.appService.approveApp(appId).subscribe(_ => {
-            const i = this.apps.findIndex(a => a.app_id === appId);
-            if (i > -1) {
-                this.apps.splice(i, 1);
-            }
-        });
+        this.appService.approveApp(appId).subscribe(_ => this.removeApp(appId));
+    }
+
+    rejectApp(appId: string): void {
+        this.appService.rejectApp(appId).subscribe(_ => this.removeApp(appId));
+    }
+
+    private removeApp(appId: string): void {
+        const i = this.apps.findIndex(a => a.app_id === appId);
+        if (i > -1) {
+            this.apps.splice(i, 1);
+        }
     }
 }
