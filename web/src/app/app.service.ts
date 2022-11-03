@@ -12,6 +12,7 @@ import { PendingApp } from './pending-app';
 export class AppService {
     private readonly appsUrl = 'api/apps';
     private readonly pendingAppsUrl = 'api/pending-apps';
+    private readonly updatesUrl = 'api/updates';
     private readonly approvedAppsUrl = 'api/approved-apps';
 
     constructor(private http: HttpClient) {}
@@ -22,6 +23,10 @@ export class AppService {
 
     getPendingApps(): Observable<PendingApp[]> {
         return this.http.get<PendingApp[]>(this.pendingAppsUrl);
+    }
+
+    getUpdates(): Observable<PendingApp[]> {
+        return this.http.get<PendingApp[]>(this.updatesUrl);
     }
 
     getApprovedApps(): Observable<App[]> {
