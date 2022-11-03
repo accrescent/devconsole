@@ -32,6 +32,12 @@ export class ReviewComponent implements OnInit {
             .subscribe(_ => this.removeUpdate(appId, versionCode));
     }
 
+    rejectUpdate(appId: string, versionCode: number): void {
+        this.appService.rejectUpdate(appId, versionCode)
+            .subscribe(_ => this.removeUpdate(appId, versionCode));
+    }
+
+
     private removeApp(appId: string): void {
         const i = this.apps.findIndex(a => a.app_id === appId);
         if (i > -1) {

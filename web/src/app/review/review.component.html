@@ -34,6 +34,11 @@
         <button (click)="approveUpdate(update.app_id, update.version_code)" mat-button>
             Approve
         </button>
-        <button mat-flat-button color="primary">Reject</button>
+        <button
+            (click)="rejectUpdate(update.app_id, update.version_code)"
+            mat-flat-button
+            color="primary">
+            Reject
+        </button>
     </mat-card-actions>
 </mat-card>
