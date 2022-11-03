@@ -153,7 +153,7 @@ func NewApp(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"id":           m.Package,
+		"app_id":       m.Package,
 		"label":        m.Application.Label,
 		"version_name": m.VersionName,
 		"version_code": m.VersionCode,
