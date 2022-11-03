@@ -71,6 +71,7 @@ func main() {
 	reviewer.PATCH("/api/pending-apps/:id", api.ApproveApp)
 	reviewer.DELETE("/api/pending-apps/:id", api.RejectApp)
 	reviewer.GET("/api/updates", api.GetUpdates)
+	reviewer.PATCH("/api/updates/:id/:version", api.ApproveUpdate)
 	auth.GET("/api/approved-apps", middleware.SignerRequired(), api.GetApprovedApps)
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.LogOut)
@@ -79,7 +80,6 @@ func main() {
 	auth.PATCH("/api/apps/:id", api.SubmitApp)
 	update.POST("/api/apps/:id/updates", api.NewUpdate)
 	update.PATCH("/api/apps/:id/:version", api.SubmitUpdate)
-	reviewer.POST("/api/apps/:id/updates/:version/approve", api.ApproveUpdate)
 	auth.POST("/api/apps/:id", middleware.SignerRequired(), api.PublishApp)
 
 	srv := &http.Server{
