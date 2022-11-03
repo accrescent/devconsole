@@ -67,6 +67,10 @@ export class AppService {
         return this.http.patch<void>(`${this.updatesUrl}/${id}/${versionCode}`, '');
     }
 
+    rejectUpdate(id: string, versionCode: number): Observable<void> {
+        return this.http.delete<void>(`${this.updatesUrl}/${id}/${versionCode}`);
+    }
+
     publishApp(id: string): Observable<void> {
         return this.http.post<void>(`${this.appsUrl}/${id}`, '');
     }
