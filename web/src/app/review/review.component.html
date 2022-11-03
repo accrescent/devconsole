@@ -10,6 +10,6 @@
     </mat-card-content>
     <mat-card-actions align="end">
         <button (click)="approveApp(app.app_id)" mat-button>Approve</button>
-        <button mat-flat-button color="primary">Reject</button>
+        <button (click)="rejectApp(app.app_id)" mat-flat-button color="primary">Reject</button>
     </mat-card-actions>
 </mat-card>

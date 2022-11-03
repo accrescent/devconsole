@@ -23,6 +23,10 @@ export class AppService {
         return this.http.patch<void>(`${this.pendingAppsUrl}/${appId}`, '');
     }
 
+    rejectApp(appId: string): Observable<void> {
+        return this.http.delete<void>(`${this.pendingAppsUrl}/${appId}`);
+    }
+
     uploadApp(app: File): Observable<App> {
         const formData = new FormData();
         formData.append("app", app);
