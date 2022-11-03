@@ -29,6 +29,7 @@ export class NewAppFormComponent {
     }
 
     onSubmit(): void {
-        this.appService.submitApp(this.app!.id).subscribe(_ => this.router.navigate(['dashboard']));
+        this.appService.submitApp(this.app!.app_id)
+            .subscribe(_ => this.router.navigate(['dashboard']));
     }
 }

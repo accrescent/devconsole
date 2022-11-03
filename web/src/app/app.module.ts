@@ -22,6 +22,7 @@ import { NewAppFormComponent } from './new-app-form/new-app-form.component';
 import { ConsoleLayoutComponent } from './console-layout/console-layout.component';
 import { LoginComponent } from './login/login.component';
 import { ReviewComponent } from './review/review.component';
+import { AppListComponent } from './app-list/app-list.component';
 
 @NgModule({
     declarations: [
@@ -35,6 +36,7 @@ import { ReviewComponent } from './review/review.component';
         ConsoleLayoutComponent,
         LoginComponent,
         ReviewComponent,
+        AppListComponent,
     ],
     imports: [
         BrowserModule,

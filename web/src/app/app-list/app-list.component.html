@@ -1,0 +1,16 @@
+<mat-card *ngFor="let app of apps">
+    <mat-card-title>{{ app.label }}</mat-card-title>
+    <mat-card-subtitle>{{ app.app_id }}</mat-card-subtitle>
+    <mat-card-content>
+        <h4>App info</h4>
+        <ul>
+            <li>Version code: {{ app.version_code }}</li>
+            <li>Version name: {{ app.version_name }}</li>
+        </ul>
+    </mat-card-content>
+    <mat-card-actions align="end">
+        <button mat-flat-button color="primary">
+            Upload new update
+        </button>
+    </mat-card-actions>
+</mat-card>

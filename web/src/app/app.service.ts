@@ -15,6 +15,10 @@ export class AppService {
 
     constructor(private http: HttpClient) {}
 
+    getApps(): Observable<App[]> {
+        return this.http.get<App[]>(this.appsUrl);
+    }
+
     getPendingApps(): Observable<PendingApp[]> {
         return this.http.get<PendingApp[]>(this.pendingAppsUrl);
     }

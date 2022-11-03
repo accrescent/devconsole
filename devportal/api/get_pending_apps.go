@@ -5,15 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-)
 
-type App struct {
-	AppID       string   `json:"app_id"`
-	Label       string   `json:"label"`
-	VersionCode int      `json:"version_code"`
-	VersionName string   `json:"version_name"`
-	Issues      []string `json:"issues,omitempty"`
-}
+	"github.com/accrescent/devportal/data"
+)
 
 func GetPendingApps(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
@@ -30,7 +24,7 @@ func GetPendingApps(c *gin.Context) {
 		return
 	}
 	defer dbApps.Close()
-	var apps []App
+	var apps []data.App
 	for dbApps.Next() {
 		var appID, label, versionName string
 		var versionCode int
@@ -64,7 +58,13 @@ func GetPendingApps(c *gin.Context) {
 			issues = append(issues, issueID)
 		}
 
-		app := App{appID, label, versionCode, versionName, issues}
+		app := data.App{
+			AppID:       appID,
+			Label:       label,
+			VersionCode: versionCode,
+			VersionName: versionName,
+			Issues:      issues,
+		}
 		apps = append(apps, app)
 	}
 
