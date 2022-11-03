@@ -86,7 +86,6 @@ func InitializeDB(db *sql.DB) error {
 		return err
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS staging_updates (
-		id INTEGER PRIMARY KEY,
 		app_id TEXT NOT NULL REFERENCES published_apps(id) ON DELETE CASCADE,
 		user_gh_id INT NOT NULL REFERENCES users(gh_id) ON DELETE CASCADE,
 		label TEXT NOT NULL,
@@ -94,12 +93,11 @@ func InitializeDB(db *sql.DB) error {
 		version_name TEXT NOT NULL,
 		path TEXT NOT NULL,
 		issue_group_id INT REFERENCES issue_groups(id),
-		UNIQUE (app_id, version_code)
+		PRIMARY KEY (app_id, version_code)
 	) STRICT`); err != nil {
 		return err
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS submitted_updates (
-		id INTEGER PRIMARY KEY,
 		app_id TEXT NOT NULL REFERENCES published_apps(id) ON DELETE CASCADE,
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
@@ -107,7 +105,7 @@ func InitializeDB(db *sql.DB) error {
 		reviewer_gh_id INT NOT NULL REFERENCES reviewers(user_gh_id),
 		path TEXT NOT NULL,
 		issue_group_id INT NOT NULL REFERENCES issue_groups(id),
-		UNIQUE (app_id, version_code)
+		PRIMARY KEY (app_id, version_code)
 	) STRICT`); err != nil {
 		return err
 	}

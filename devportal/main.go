@@ -77,7 +77,7 @@ func main() {
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps/:id", api.SubmitApp)
 	update.POST("/api/apps/:id/updates", api.NewUpdate)
-	update.PATCH("/api/apps/:id/updates", api.SubmitUpdate)
+	update.PATCH("/api/apps/:id/:version", api.SubmitUpdate)
 	reviewer.POST("/api/apps/:id/updates/:version/approve", api.ApproveUpdate)
 	auth.POST("/api/apps/:id", middleware.SignerRequired(), api.PublishApp)
 

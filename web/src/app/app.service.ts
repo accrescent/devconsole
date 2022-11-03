@@ -43,8 +43,19 @@ export class AppService {
         return this.http.post<App>(this.appsUrl, formData);
     }
 
+    uploadUpdate(app: File, appId: string): Observable<App> {
+        const formData = new FormData();
+        formData.append("app", app);
+
+        return this.http.post<App>(`${this.appsUrl}/${appId}/updates`, formData);
+    }
+
     submitApp(id: string): Observable<void> {
         return this.http.patch<void>(`${this.appsUrl}/${id}`, '');
+    }
+
+    submitUpdate(id: string, versionCode: number): Observable<void> {
+        return this.http.patch<void>(`${this.appsUrl}/${id}/${versionCode}`, '');
     }
 
     publishApp(id: string): Observable<void> {

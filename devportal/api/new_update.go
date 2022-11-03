@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -35,7 +34,7 @@ func NewUpdate(c *gin.Context) {
 		return
 	}
 
-	file, err := c.FormFile("file")
+	file, err := c.FormFile("app")
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
@@ -88,7 +87,7 @@ func NewUpdate(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	var issueGroupID *int
+	var issueGroupID *int64
 	if len(issues) > 0 {
 		res, err := tx.Exec("INSERT INTO issue_groups DEFAULT VALUES")
 		if err != nil {
@@ -98,7 +97,8 @@ func NewUpdate(c *gin.Context) {
 			}
 			return
 		}
-		issueGroupID, err := res.LastInsertId()
+		groupID, err := res.LastInsertId()
+		issueGroupID = &groupID
 		if err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			if err := tx.Rollback(); err != nil {
@@ -111,7 +111,7 @@ func NewUpdate(c *gin.Context) {
 		var params []interface{}
 		for _, issue := range issues {
 			inserts = append(inserts, "(?, ?)")
-			params = append(params, issueGroupID, issue)
+			params = append(params, issue, issueGroupID)
 		}
 		insertQuery = insertQuery + strings.Join(inserts, ",")
 		if _, err := tx.Exec(insertQuery, params...); err != nil {
@@ -122,7 +122,7 @@ func NewUpdate(c *gin.Context) {
 			return
 		}
 	}
-	res, err := tx.Exec(
+	if _, err := tx.Exec(
 		`REPLACE INTO staging_updates (
 			app_id, user_gh_id, label, version_code, version_name, path, issue_group_id
 		)
@@ -134,17 +134,11 @@ func NewUpdate(c *gin.Context) {
 		m.VersionName,
 		filename,
 		issueGroupID,
-	)
-	if err != nil {
+	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		if err := tx.Rollback(); err != nil {
 			_ = c.Error(err)
 		}
-		return
-	}
-	updateID, err := res.LastInsertId()
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	if err := tx.Commit(); err != nil {
@@ -158,8 +152,11 @@ func NewUpdate(c *gin.Context) {
 
 		var unsubmitted bool
 		if err := db.QueryRow(
-			"SELECT EXISTS (SELECT 1 FROM staging_updates WHERE id = ?)",
-			updateID,
+			`SELECT EXISTS (
+				SELECT 1 FROM staging_updates WHERE app_id = ? AND version_code = ?
+			)`,
+			appID,
+			m.VersionCode,
 		).Scan(&unsubmitted); err != nil {
 			_ = cCp.Error(err)
 			return
@@ -167,8 +164,9 @@ func NewUpdate(c *gin.Context) {
 
 		if unsubmitted {
 			if _, err := db.Exec(
-				"DELETE FROM staging_updates WHERE id = ?",
-				updateID,
+				"DELETE FROM staging_updates WHERE app_id = ? AND version_code = ?",
+				appID,
+				m.VersionCode,
 			); err != nil {
 				_ = cCp.Error(err)
 			}
@@ -176,16 +174,11 @@ func NewUpdate(c *gin.Context) {
 		}
 	}()
 
-	c.SetSameSite(http.SameSiteStrictMode)
-	// Max-Age 5 minutes
-	c.SetCookie(stagingUpdateIDCookie, strconv.FormatInt(updateID, 10), 5*60, "/", "", true, true)
-
 	c.JSON(http.StatusCreated, gin.H{
-		"id":            m.Package,
-		"current_vcode": versionCode,
-		"current_vname": versionName,
-		"new_vcode":     m.VersionCode,
-		"new_vname":     m.VersionName,
-		"issues":        issues,
+		"app_id":       m.Package,
+		"label":        m.Application.Label,
+		"version_code": m.VersionCode,
+		"version_name": m.VersionName,
+		"issues":       issues,
 	})
 }
