@@ -61,7 +61,7 @@ func main() {
 	r.Use(middleware.Config(conf))
 
 	r.GET("/auth/github", auth.GitHub)
-	r.GET("/auth/github/callback", auth.GitHubCallback)
+	r.GET("/api/auth/github/callback", auth.GitHubCallback)
 
 	auth := r.Group("/", middleware.AuthRequired())
 	update := auth.Group("/", middleware.UserCanUpdateRequired())

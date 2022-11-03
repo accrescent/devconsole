@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NewAppComponent } from './new-app/new-app.component';
+import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { LandingComponent } from './landing/landing.component';
 import { ConsoleLayoutComponent } from './console-layout/console-layout.component';
@@ -10,6 +11,7 @@ import { AuthGuard } from './auth.guard';
 
 const routes: Routes = [
     { path: '', component: LandingComponent },
+    { path: 'auth/github/callback', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     { path: '', component: ConsoleLayoutComponent, canActivate: [AuthGuard], children: [
         { path: 'dashboard', component: DashboardComponent },

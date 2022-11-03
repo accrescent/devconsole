@@ -102,19 +102,21 @@ func GitHubCallback(c *gin.Context) {
 
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie(SessionCookie, sidStr, 24*60*60, "/", "", true, true) // Max-Age 1 day
-	c.SetCookie("logged_in", "yes", 24*60*60, "/", "", true, false)
 
-	var registered bool
+	var registered, reviewer bool
 	if err = db.QueryRow(
-		"SELECT EXISTS (SELECT 1 FROM users WHERE gh_id = ?)",
+		`SELECT EXISTS (SELECT 1 FROM users WHERE gh_id = ?),
+			EXISTS (SELECT 1 FROM reviewers WHERE user_gh_id = ?)`,
 		user.ID,
-	).Scan(&registered); err != nil {
+		user.ID,
+	).Scan(&registered, &reviewer); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if registered {
-		c.Redirect(http.StatusFound, "/dashboard")
-	} else {
-		c.Redirect(http.StatusFound, "/register")
-	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"logged_in":  true,
+		"registered": registered,
+		"reviewer":   reviewer,
+	})
 }
