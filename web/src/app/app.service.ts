@@ -4,14 +4,20 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { App } from './app';
+import { PendingApp } from './pending-app';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AppService {
     private readonly appsUrl = 'api/apps';
+    private readonly pendingAppsUrl = 'api/pending-apps';
 
     constructor(private http: HttpClient) {}
+
+    getPendingApps(): Observable<PendingApp[]> {
+        return this.http.get<PendingApp[]>(this.pendingAppsUrl);
+    }
 
     uploadApp(app: File): Observable<App> {
         const formData = new FormData();
