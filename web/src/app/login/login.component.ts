@@ -21,6 +21,7 @@ export class LoginComponent implements OnInit {
                 this.authService.loggedIn = res.logged_in;
                 this.authService.registered = res.registered;
                 this.authService.reviewer = res.reviewer;
+                this.authService.publisher = res.publisher;
 
                 if (this.authService.loggedIn) {
                     if (this.authService.registered) {

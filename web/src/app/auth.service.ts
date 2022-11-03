@@ -42,4 +42,12 @@ export class AuthService {
     set reviewer(reviewer: boolean) {
         localStorage.setItem('reviewer', String(reviewer));
     }
+
+    get publisher(): boolean {
+        return localStorage.getItem('publisher') === 'true';
+    }
+
+    set publisher(publisher: boolean) {
+        localStorage.setItem('publisher', String(publisher));
+    }
 }

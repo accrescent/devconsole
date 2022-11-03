@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v48/github"
 	"golang.org/x/oauth2"
+
+	"github.com/accrescent/devportal/config"
 )
 
 func GitHub(c *gin.Context) {
@@ -33,7 +35,8 @@ func GitHub(c *gin.Context) {
 
 func GitHubCallback(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
-	conf := c.MustGet("oauth2_config").(*oauth2.Config)
+	conf := c.MustGet("config").(*config.Config)
+	oauth2Conf := c.MustGet("oauth2_config").(*oauth2.Config)
 
 	stateParam, exists := c.GetQuery("state")
 	if !exists {
@@ -59,7 +62,7 @@ func GitHubCallback(c *gin.Context) {
 	}
 
 	code := c.Query("code")
-	token, err := conf.Exchange(c, code)
+	token, err := oauth2Conf.Exchange(c, code)
 	if err != nil {
 		var retrieveError *oauth2.RetrieveError
 		if errors.As(err, &retrieveError) {
@@ -71,7 +74,7 @@ func GitHubCallback(c *gin.Context) {
 	}
 
 	// Get authenticated user
-	httpClient := conf.Client(c, token)
+	httpClient := oauth2Conf.Client(c, token)
 	client := github.NewClient(httpClient)
 	user, _, err := client.Users.Get(c, "")
 	if err != nil {
@@ -118,5 +121,6 @@ func GitHubCallback(c *gin.Context) {
 		"logged_in":  true,
 		"registered": registered,
 		"reviewer":   reviewer,
+		"publisher":  *user.ID == conf.SignerGitHubID,
 	})
 }

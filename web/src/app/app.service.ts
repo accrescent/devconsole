@@ -12,6 +12,7 @@ import { PendingApp } from './pending-app';
 export class AppService {
     private readonly appsUrl = 'api/apps';
     private readonly pendingAppsUrl = 'api/pending-apps';
+    private readonly approvedAppsUrl = 'api/approved-apps';
 
     constructor(private http: HttpClient) {}
 
@@ -21,6 +22,10 @@ export class AppService {
 
     getPendingApps(): Observable<PendingApp[]> {
         return this.http.get<PendingApp[]>(this.pendingAppsUrl);
+    }
+
+    getApprovedApps(): Observable<App[]> {
+        return this.http.get<App[]>(this.approvedAppsUrl);
     }
 
     approveApp(appId: string): Observable<void> {
@@ -40,5 +45,9 @@ export class AppService {
 
     submitApp(id: string): Observable<void> {
         return this.http.patch<void>(`${this.appsUrl}/${id}`, '');
+    }
+
+    publishApp(id: string): Observable<void> {
+        return this.http.post<void>(`${this.appsUrl}/${id}`, '');
     }
 }

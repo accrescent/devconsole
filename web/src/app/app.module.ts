@@ -23,6 +23,7 @@ import { ConsoleLayoutComponent } from './console-layout/console-layout.componen
 import { LoginComponent } from './login/login.component';
 import { ReviewComponent } from './review/review.component';
 import { AppListComponent } from './app-list/app-list.component';
+import { PublishComponent } from './publish/publish.component';
 
 @NgModule({
     declarations: [
@@ -37,6 +38,7 @@ import { AppListComponent } from './app-list/app-list.component';
         LoginComponent,
         ReviewComponent,
         AppListComponent,
+        PublishComponent,
     ],
     imports: [
         BrowserModule,

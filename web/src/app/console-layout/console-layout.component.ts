@@ -13,4 +13,8 @@ export class ConsoleLayoutComponent {
     get reviewer(): boolean {
         return this.authService.reviewer;
     }
+
+    get publisher(): boolean {
+        return this.authService.publisher;
+    }
 }
