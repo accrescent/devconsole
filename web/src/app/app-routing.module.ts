@@ -4,6 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { AppListComponent } from './app-list/app-list.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NewAppComponent } from './new-app/new-app.component';
+import { NewUpdateComponent } from './new-update/new-update.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { ReviewComponent } from './review/review.component';
@@ -20,7 +21,8 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: '', component: ConsoleLayoutComponent, canActivate: [AuthGuard], children: [
         { path: 'dashboard', component: DashboardComponent },
-        { path: 'apps', component: AppListComponent },
+        { path: 'apps', component: AppListComponent, },
+        { path: 'apps/:id/update', component: NewUpdateComponent },
         { path: 'new-app', component: NewAppComponent },
         { path: 'review', component: ReviewComponent, canActivate: [ReviewerGuard] },
         { path: 'publish', component: PublishComponent, canActivate: [PublisherGuard] },

@@ -19,6 +19,8 @@ import { LandingComponent } from './landing/landing.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NewAppComponent } from './new-app/new-app.component';
 import { NewAppFormComponent } from './new-app-form/new-app-form.component';
+import { NewUpdateComponent } from './new-update/new-update.component';
+import { NewUpdateFormComponent } from './new-update-form/new-update-form.component';
 import { ConsoleLayoutComponent } from './console-layout/console-layout.component';
 import { LoginComponent } from './login/login.component';
 import { ReviewComponent } from './review/review.component';
@@ -34,6 +36,8 @@ import { PublishComponent } from './publish/publish.component';
         DashboardComponent,
         NewAppComponent,
         NewAppFormComponent,
+        NewUpdateComponent,
+        NewUpdateFormComponent,
         ConsoleLayoutComponent,
         LoginComponent,
         ReviewComponent,

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-sqlite3"
@@ -14,21 +15,21 @@ import (
 func SubmitUpdate(c *gin.Context) {
 	db := c.MustGet("db").(*sql.DB)
 	ghID := c.MustGet("gh_id").(int64)
-	stagingUpdateID, err := c.Cookie(stagingUpdateIDCookie)
+	appID := c.Param("id")
+	versionCode, err := strconv.Atoi(c.Param("version"))
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
 
-	var appID, label, appPath, versionName string
-	var versionCode int
+	var label, appPath, versionName string
 	var issueGroupID *int
 	if err := db.QueryRow(
-		`SELECT app_id, label, version_code, version_name, path, issue_group_id
+		`SELECT label, version_name, path, issue_group_id
 		FROM staging_updates
-		WHERE id = ? AND user_gh_id = ?`,
-		stagingUpdateID, ghID,
-	).Scan(&appID, &label, &versionCode, &versionName, &appPath, &issueGroupID); err != nil {
+		WHERE app_id = ? AND version_code = ? AND user_gh_id = ?`,
+		appID, versionCode, ghID,
+	).Scan(&label, &versionName, &appPath, &issueGroupID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
