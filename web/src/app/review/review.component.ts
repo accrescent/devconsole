@@ -10,11 +10,13 @@ import { PendingApp } from '../pending-app';
 })
 export class ReviewComponent implements OnInit {
     apps: PendingApp[] = [];
+    updates: PendingApp[] = [];
 
     constructor(private appService: AppService) {}
 
     ngOnInit(): void {
         this.appService.getPendingApps().subscribe(apps => this.apps = apps);
+        this.appService.getUpdates().subscribe(updates => this.updates = updates);
     }
 
     approveApp(appId: string): void {

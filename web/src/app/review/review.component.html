@@ -13,3 +13,25 @@
         <button (click)="rejectApp(app.app_id)" mat-flat-button color="primary">Reject</button>
     </mat-card-actions>
 </mat-card>
+
+<mat-card *ngFor="let update of updates">
+    <mat-card-title>{{ update.label }}</mat-card-title>
+    <mat-card-subtitle>{{ update.app_id }}</mat-card-subtitle>
+    <mat-card-content>
+        <h4>Review issues</h4>
+        <ul>
+            <li *ngFor="let issue of update.issues"><code>{{ issue }}</code></li>
+            <li *ngIf="!update.issues">None</li>
+        </ul>
+
+        <h4>Update info</h4>
+        <ul>
+            <li>Version code: {{ update.version_code }}</li>
+            <li>Version name: {{ update.version_name }}</li>
+        </ul>
+    </mat-card-content>
+    <mat-card-actions align="end">
+        <button mat-button>Approve</button>
+        <button mat-flat-button color="primary">Reject</button>
+    </mat-card-actions>
+</mat-card>
