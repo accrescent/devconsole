@@ -64,17 +64,18 @@ func main() {
 	r.GET("/api/auth/github/callback", auth.GitHubCallback)
 
 	auth := r.Group("/", middleware.AuthRequired())
+	reviewer := auth.Group("/", middleware.ReviewerRequired())
 	update := auth.Group("/", middleware.UserCanUpdateRequired())
 	auth.GET("/api/emails", api.GetEmails)
-	auth.GET("/api/pending-apps", middleware.ReviewerRequired(), api.GetPendingApps)
+	reviewer.GET("/api/pending-apps", api.GetPendingApps)
 	auth.POST("/api/register", api.Register)
 	auth.POST("/api/logout", api.LogOut)
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps/:id", api.SubmitApp)
 	update.POST("/api/apps/:id/updates", api.NewUpdate)
 	update.PATCH("/api/apps/:id/updates", api.SubmitUpdate)
-	auth.POST("/api/apps/approve", middleware.ReviewerRequired(), api.ApproveApp)
-	auth.POST("/api/apps/:id/updates/:version/approve", middleware.ReviewerRequired(), api.ApproveUpdate)
+	reviewer.POST("/api/apps/approve", api.ApproveApp)
+	reviewer.POST("/api/apps/:id/updates/:version/approve", api.ApproveUpdate)
 	auth.POST("/api/apps/:id", middleware.SignerRequired(), api.PublishApp)
 
 	srv := &http.Server{
