@@ -20,6 +20,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { NewAppComponent } from './new-app/new-app.component';
 import { NewAppFormComponent } from './new-app-form/new-app-form.component';
 import { ConsoleLayoutComponent } from './console-layout/console-layout.component';
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
     declarations: [
@@ -31,6 +32,7 @@ import { ConsoleLayoutComponent } from './console-layout/console-layout.componen
         NewAppComponent,
         NewAppFormComponent,
         ConsoleLayoutComponent,
+        LoginComponent,
     ],
     imports: [
         BrowserModule,
