@@ -3,7 +3,6 @@ import { NonNullableFormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { RegisterService } from '../register.service';
-import { Email } from '../email';
 
 @Component({
     selector: 'app-register-form',
