@@ -38,6 +38,16 @@ func SubmitUpdate(c *gin.Context) {
 		return
 	}
 
+	if issueGroupID == nil {
+		// No review necessary, so publish the update immediately.
+		if err := publish(c, appID, versionCode, versionName,
+			quality.Update, appPath,
+		); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+
 	tx, err := db.Begin()
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -77,13 +87,6 @@ func SubmitUpdate(c *gin.Context) {
 		}
 	} else {
 		// No review necessary, so publish the update immediately.
-		if err := publish(c, appID, versionCode, versionName,
-			quality.Update, appPath,
-		); err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			return
-		}
-
 		if _, err := tx.Exec(
 			`UPDATE published_apps
 			SET version_code = ?, version_name = ?
