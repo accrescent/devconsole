@@ -22,7 +22,7 @@ func NewUpdate(c *gin.Context) {
 
 	var versionCode int
 	if err := db.QueryRow(
-		"SELECT version_code from published_apps WHERE id = ?",
+		"SELECT version_code FROM published_apps WHERE id = ?",
 		appID,
 	).Scan(&versionCode); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
