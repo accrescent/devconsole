@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -144,34 +143,6 @@ func NewUpdate(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	// Delete app after 5 minutes if not submitted
-	cCp := c.Copy()
-	go func() {
-		time.Sleep(5 * time.Minute)
-
-		var unsubmitted bool
-		if err := db.QueryRow(
-			`SELECT EXISTS (
-				SELECT 1 FROM staging_updates WHERE app_id = ? AND version_code = ?
-			)`,
-			appID,
-			m.VersionCode,
-		).Scan(&unsubmitted); err != nil {
-			_ = cCp.Error(err)
-			return
-		}
-
-		if unsubmitted {
-			if _, err := db.Exec(
-				"DELETE FROM staging_updates WHERE app_id = ? AND version_code = ?",
-				appID,
-				m.VersionCode,
-			); err != nil {
-				_ = cCp.Error(err)
-			}
-			os.RemoveAll(dir)
-		}
-	}()
 
 	c.JSON(http.StatusCreated, gin.H{
 		"app_id":       m.Package,

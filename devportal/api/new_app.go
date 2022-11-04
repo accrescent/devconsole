@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -35,30 +34,6 @@ func NewApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	// Delete app after 5 minutes if not submitted
-	cCp := c.Copy()
-	go func() {
-		time.Sleep(5 * time.Minute)
-
-		var unsubmitted bool
-		if err := db.QueryRow(
-			"SELECT EXISTS (SELECT 1 FROM staging_apps WHERE user_gh_id = ? AND path = ?)",
-			ghID, filename,
-		).Scan(&unsubmitted); err != nil {
-			_ = cCp.Error(err)
-			return
-		}
-
-		if unsubmitted {
-			if _, err := db.Exec(
-				"DELETE FROM staging_apps WHERE user_gh_id = ? AND path = ?",
-				ghID, filename,
-			); err != nil {
-				_ = cCp.Error(err)
-			}
-			os.RemoveAll(dir)
-		}
-	}()
 
 	// We've received the (supposed) APK set. Now extract the app metadata.
 	apk, err := apkFromAPKSet(filename)
