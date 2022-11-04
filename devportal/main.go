@@ -38,7 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	oauth2Conf := &oauth2.Config{
+	oauth2Conf := oauth2.Config{
 		ClientID:     os.Getenv("GH_CLIENT_ID"),
 		ClientSecret: os.Getenv("GH_CLIENT_SECRET"),
 		Endpoint:     endpoints.GitHub,
@@ -50,7 +50,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	conf := &config.Config{
+	conf := config.Config{
 		SignerGitHubID: signerGitHubID,
 		RepoURL:        os.Getenv("REPO_URL"),
 		APIKey:         os.Getenv("API_KEY"),

@@ -16,7 +16,7 @@ func publish(
 	c *gin.Context, appID string, versionCode int, versionName string,
 	uploadType quality.UploadType, apkSetPath string,
 ) error {
-	conf := c.MustGet("config").(*config.Config)
+	conf := c.MustGet("config").(config.Config)
 
 	var method string
 	if uploadType == quality.NewApp {

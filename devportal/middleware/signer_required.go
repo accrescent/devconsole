@@ -10,7 +10,7 @@ import (
 
 func SignerRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		conf := c.MustGet("config").(*config.Config)
+		conf := c.MustGet("config").(config.Config)
 		ghID := c.MustGet("gh_id").(int64)
 
 		if ghID != conf.SignerGitHubID {

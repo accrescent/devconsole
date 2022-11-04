@@ -16,7 +16,7 @@ import (
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		db := c.MustGet("db").(data.DB)
-		conf := c.MustGet("oauth2_config").(*oauth2.Config)
+		conf := c.MustGet("oauth2_config").(oauth2.Config)
 
 		sessionID, err := c.Cookie(auth.SessionCookie)
 		if err != nil {
