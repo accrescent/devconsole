@@ -7,7 +7,6 @@ import { RegisterService } from '../register.service';
 @Component({
     selector: 'app-register-form',
     templateUrl: './register-form.component.html',
-    styleUrls: ['./register-form.component.css']
 })
 export class RegisterFormComponent implements OnInit {
     form = this.fb.group({
