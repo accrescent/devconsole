@@ -1,5 +1,5 @@
 <form [formGroup]="uploadForm" (ngSubmit)="onUpload()">
-    <input id="app" #appinput type="file" formControlName="app">
+    <input id="app" #appinput type="file" accept=".apks" formControlName="app">
     <button
         type="button"
         mat-flat-button
@@ -9,7 +9,7 @@
     </button>
     <p>{{ uploadForm.value.app?.replace("C:\\fakepath\\", "") }}</p>
     <br>
-    <input id="icon" #iconinput type="file" formControlName="icon">
+    <input id="icon" #iconinput type="file" accept="image/png" formControlName="icon">
     <button
         type="button"
         mat-flat-button
