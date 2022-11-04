@@ -15,7 +15,7 @@ import (
 )
 
 func GitHub(c *gin.Context) {
-	conf := c.MustGet("oauth2_config").(*oauth2.Config)
+	conf := c.MustGet("oauth2_config").(oauth2.Config)
 
 	// CSRF protection. http://tools.ietf.org/html/rfc6749#section-10.12
 	state := make([]byte, 16)
@@ -34,8 +34,8 @@ func GitHub(c *gin.Context) {
 
 func GitHubCallback(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
-	conf := c.MustGet("config").(*config.Config)
-	oauth2Conf := c.MustGet("oauth2_config").(*oauth2.Config)
+	conf := c.MustGet("config").(config.Config)
+	oauth2Conf := c.MustGet("oauth2_config").(oauth2.Config)
 
 	stateParam, exists := c.GetQuery("state")
 	if !exists {
