@@ -2,17 +2,16 @@ package auth
 
 import (
 	"crypto/rand"
-	"database/sql"
 	"encoding/hex"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v48/github"
 	"golang.org/x/oauth2"
 
 	"github.com/accrescent/devportal/config"
+	"github.com/accrescent/devportal/data"
 )
 
 func GitHub(c *gin.Context) {
@@ -34,7 +33,7 @@ func GitHub(c *gin.Context) {
 }
 
 func GitHubCallback(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
+	db := c.MustGet("db").(data.DB)
 	conf := c.MustGet("config").(*config.Config)
 	oauth2Conf := c.MustGet("oauth2_config").(*oauth2.Config)
 
@@ -90,15 +89,11 @@ func GitHubCallback(c *gin.Context) {
 	}
 	sidStr := hex.EncodeToString(sid)
 
-	now := time.Now()
-	if _, err := db.Exec("DELETE FROM sessions WHERE expiry_time < ?", now.Unix()); err != nil {
+	if err := db.DeleteExpiredSessions(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if _, err := db.Exec(
-		"INSERT INTO sessions (id, gh_id, access_token, expiry_time) VALUES (?, ?, ?, ?)",
-		sidStr, user.ID, token.AccessToken, now.Add(24*time.Hour).Unix(),
-	); err != nil {
+	if err := db.CreateSession(sidStr, *user.ID, token.AccessToken); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -106,13 +101,8 @@ func GitHubCallback(c *gin.Context) {
 	c.SetSameSite(http.SameSiteStrictMode)
 	c.SetCookie(SessionCookie, sidStr, 24*60*60, "/", "", true, true) // Max-Age 1 day
 
-	var registered, reviewer bool
-	if err = db.QueryRow(
-		`SELECT EXISTS (SELECT 1 FROM users WHERE gh_id = ?),
-			EXISTS (SELECT 1 FROM reviewers WHERE user_gh_id = ?)`,
-		user.ID,
-		user.ID,
-	).Scan(&registered, &reviewer); err != nil {
+	registered, reviewer, err := db.GetUserRoles(*user.ID)
+	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

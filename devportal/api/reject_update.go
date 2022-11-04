@@ -1,15 +1,16 @@
 package api
 
 import (
-	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/accrescent/devportal/data"
 )
 
 func RejectUpdate(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
+	db := c.MustGet("db").(data.DB)
 	appID := c.Param("id")
 	versionCode, err := strconv.Atoi(c.Param("version"))
 	if err != nil {
@@ -17,11 +18,7 @@ func RejectUpdate(c *gin.Context) {
 		return
 	}
 
-	if _, err := db.Exec(
-		"DELETE FROM submitted_updates WHERE app_id = ? AND version_code = ?",
-		appID,
-		versionCode,
-	); err != nil {
+	if err := db.DeleteSubmittedUpdate(appID, versionCode); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
