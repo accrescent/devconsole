@@ -21,11 +21,10 @@ func NewUpdate(c *gin.Context) {
 	appID := c.Param("id")
 
 	var versionCode int
-	var versionName string
 	if err := db.QueryRow(
-		"SELECT version_code, version_name from published_apps WHERE id = ?",
+		"SELECT version_code from published_apps WHERE id = ?",
 		appID,
-	).Scan(&versionCode, &versionName); err != nil {
+	).Scan(&versionCode); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
