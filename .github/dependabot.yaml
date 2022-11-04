@@ -5,11 +5,15 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
-    directory: "/"
+    directory: "/devportal"
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: "/reposerver"
     schedule:
       interval: daily
     open-pull-requests-limit: 20
   - package-ecosystem: npm
-    directory: "/"
+    directory: "/web"
     schedule:
       interval: daily
