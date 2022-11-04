@@ -30,11 +30,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db, err := data.OpenDB()
-	if err != nil {
+	db := new(data.SQLite)
+	if err := db.Open(); err != nil {
 		log.Fatal(err)
 	}
-	if err := data.InitializeDB(db); err != nil {
+	if err := db.Initialize(); err != nil {
 		log.Fatal(err)
 	}
 

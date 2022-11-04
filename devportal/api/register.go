@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 
@@ -14,7 +13,7 @@ import (
 )
 
 func Register(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
+	db := c.MustGet("db").(data.DB)
 	ghID := c.MustGet("gh_id").(int64)
 	ghClient := c.MustGet("gh_client").(*github.Client)
 
@@ -37,10 +36,7 @@ func Register(c *gin.Context) {
 	}
 
 	// Register user
-	if _, err := db.Exec(
-		"INSERT INTO users (gh_id, email) VALUES (?, ?)",
-		ghID, input.Email,
-	); err != nil {
+	if err := db.CreateUser(ghID, input.Email); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
 			_ = c.AbortWithError(http.StatusConflict, err)
 		} else {

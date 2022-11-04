@@ -7,23 +7,20 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/accrescent/devportal/data"
 	"github.com/accrescent/devportal/quality"
 )
 
 func NewUpdate(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
+	db := c.MustGet("db").(data.DB)
 	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("id")
 
-	var versionCode int
-	if err := db.QueryRow(
-		"SELECT version_code FROM published_apps WHERE id = ?",
-		appID,
-	).Scan(&versionCode); err != nil {
+	versionCode, err := db.GetAppInfo(appID)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
@@ -80,66 +77,15 @@ func NewUpdate(c *gin.Context) {
 	// Run tests whose failures warrant manual review
 	issues := quality.RunReviewTests(apk)
 
-	tx, err := db.Begin()
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	var issueGroupID *int64
-	if len(issues) > 0 {
-		res, err := tx.Exec("INSERT INTO issue_groups DEFAULT VALUES")
-		if err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			if err := tx.Rollback(); err != nil {
-				_ = c.Error(err)
-			}
-			return
-		}
-		groupID, err := res.LastInsertId()
-		issueGroupID = &groupID
-		if err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			if err := tx.Rollback(); err != nil {
-				_ = c.Error(err)
-			}
-			return
-		}
-		insertQuery := "INSERT INTO issues (id, issue_group_id) VALUES "
-		var inserts []string
-		var params []interface{}
-		for _, issue := range issues {
-			inserts = append(inserts, "(?, ?)")
-			params = append(params, issue, issueGroupID)
-		}
-		insertQuery = insertQuery + strings.Join(inserts, ",")
-		if _, err := tx.Exec(insertQuery, params...); err != nil {
-			_ = c.AbortWithError(http.StatusInternalServerError, err)
-			if err := tx.Rollback(); err != nil {
-				_ = c.Error(err)
-			}
-			return
-		}
-	}
-	if _, err := tx.Exec(
-		`REPLACE INTO staging_updates (
-			app_id, user_gh_id, label, version_code, version_name, path, issue_group_id
-		)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+	if err := db.CreateUpdate(
 		m.Package,
 		ghID,
-		m.Application.Label,
+		*m.Application.Label,
 		m.VersionCode,
 		m.VersionName,
 		filename,
-		issueGroupID,
+		issues,
 	); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
-	if err := tx.Commit(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

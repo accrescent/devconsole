@@ -8,11 +8,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/accrescent/devportal/data"
 	"github.com/accrescent/devportal/quality"
 )
 
 func ApproveUpdate(c *gin.Context) {
-	db := c.MustGet("db").(*sql.DB)
+	db := c.MustGet("db").(data.DB)
 	appID := c.Param("id")
 	version := c.Param("version")
 	versionCode, err := strconv.Atoi(version)
@@ -21,15 +22,8 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
-	var firstUpdateVersion int
-	var versionName, path string
-	if err := db.QueryRow(
-		`SELECT (SELECT MIN(version_code) FROM submitted_updates), version_name, path
-		FROM submitted_updates
-		WHERE app_id = ? AND version_code = ?`,
-		appID,
-		versionCode,
-	).Scan(&firstUpdateVersion, &versionName, &path); err != nil {
+	firstUpdateVersion, versionName, path, err := db.GetUpdateInfo(appID, versionCode)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
 		} else {
@@ -48,36 +42,7 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
-	tx, err := db.Begin()
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	if _, err := tx.Exec(
-		`UPDATE published_apps
-		SET version_code = ?, version_name = ?
-		WHERE id = ?`,
-		versionCode, versionName,
-		appID,
-	); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
-	if _, err := tx.Exec(
-		"DELETE FROM submitted_updates WHERE app_id = ? AND version_code = ?",
-		appID,
-		versionCode,
-	); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		if err := tx.Rollback(); err != nil {
-			_ = c.Error(err)
-		}
-		return
-	}
-	if err := tx.Commit(); err != nil {
+	if err := db.ApproveUpdate(appID, versionCode, versionName); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

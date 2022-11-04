@@ -4,18 +4,18 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-github/v48/github"
 	"golang.org/x/oauth2"
 
 	"github.com/accrescent/devportal/auth"
+	"github.com/accrescent/devportal/data"
 )
 
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		db := c.MustGet("db").(*sql.DB)
+		db := c.MustGet("db").(data.DB)
 		conf := c.MustGet("oauth2_config").(*oauth2.Config)
 
 		sessionID, err := c.Cookie(auth.SessionCookie)
@@ -24,12 +24,8 @@ func AuthRequired() gin.HandlerFunc {
 			return
 		}
 
-		var ghID int64
-		var token string
-		if err := db.QueryRow(
-			"SELECT gh_id, access_token FROM sessions WHERE id = ? AND expiry_time > ?",
-			sessionID, time.Now().Unix(),
-		).Scan(&ghID, &token); err != nil {
+		ghID, token, err := db.GetSessionInfo(sessionID)
+		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				_ = c.AbortWithError(http.StatusUnauthorized, err)
 			} else {
