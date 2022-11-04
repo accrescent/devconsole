@@ -48,8 +48,16 @@ func (s *SQLite) Initialize() error {
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
 		path TEXT NOT NULL,
+		icon_id INT NOT NULL REFERENCES icons(id),
 		issue_group_id INT REFERENCES issue_groups(id),
 		PRIMARY KEY (id, user_gh_id)
+	) STRICT`); err != nil {
+		return err
+	}
+	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS icons (
+		id INTEGER PRIMARY KEY,
+		path TEXT NOT NULL,
+		hash TEXT NOT NULL
 	) STRICT`); err != nil {
 		return err
 	}
@@ -71,6 +79,7 @@ func (s *SQLite) Initialize() error {
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
+		icon_id INT NOT NULL REFERENCES icons(id),
 		issue_group_id INT REFERENCES issue_groups(id),
 		reviewer_gh_id INT NOT NULL REFERENCES reviewers(user_gh_id),
 		approved INT NOT NULL CHECK(approved in (FALSE, TRUE)) DEFAULT FALSE,
@@ -82,7 +91,8 @@ func (s *SQLite) Initialize() error {
 		id TEXT PRIMARY KEY,
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
-		version_name TEXT NOT NULL
+		version_name TEXT NOT NULL,
+		icon_id INT NOT NULL REFERENCES icons(id)
 	) STRICT`); err != nil {
 		return err
 	}
@@ -365,7 +375,9 @@ func (s *SQLite) CreateApp(
 	label string,
 	versionCode int32,
 	versionName string,
-	path string,
+	appPath string,
+	iconPath string,
+	iconHash string,
 	issues []string,
 ) error {
 	tx, err := s.db.Begin()
@@ -398,6 +410,16 @@ func (s *SQLite) CreateApp(
 			return err
 		}
 	}
+	res, err := tx.Exec("INSERT INTO icons (path, hash) VALUES (?, ?)", iconPath, iconHash)
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
+	iconID, err := res.LastInsertId()
+	if err != nil {
+		_ = tx.Rollback()
+		return err
+	}
 	if _, err := tx.Exec(
 		`REPLACE INTO staging_apps (
 			id,
@@ -406,15 +428,17 @@ func (s *SQLite) CreateApp(
 			version_code,
 			version_name,
 			path,
+			icon_id,
 			issue_group_id
 		)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 		id,
 		ghID,
 		label,
 		versionCode,
 		versionName,
-		path,
+		appPath,
+		iconID,
 		issueGroupID,
 	); err != nil {
 		_ = tx.Rollback()
@@ -494,13 +518,21 @@ func (s *SQLite) CreateUpdate(
 
 func (s *SQLite) GetSubmittedAppInfo(
 	appID string,
-) (ghID int64, label string, versionCode int, versionName string, path string, err error) {
+) (
+	ghID int64,
+	label string,
+	versionCode int,
+	versionName string,
+	iconID int,
+	path string,
+	err error,
+) {
 	err = s.db.QueryRow(
-		`SELECT gh_id, label, version_code, version_name, path
+		`SELECT gh_id, label, version_code, version_name, icon_id, path
 		FROM submitted_apps
 		WHERE id = ?`,
 		appID,
-	).Scan(&ghID, &label, &versionCode, &versionName, &path)
+	).Scan(&ghID, &label, &versionCode, &versionName, &iconID, &path)
 
 	return
 }
@@ -510,6 +542,7 @@ func (s *SQLite) PublishApp(
 	label string,
 	versionCode int,
 	versionName string,
+	iconID int,
 	ghID int64,
 ) error {
 	tx, err := s.db.Begin()
@@ -517,12 +550,13 @@ func (s *SQLite) PublishApp(
 		return err
 	}
 	if _, err := tx.Exec(
-		`INSERT INTO published_apps (id, label, version_code, version_name)
-		VALUES (?, ?, ?, ?)`,
+		`INSERT INTO published_apps (id, label, version_code, version_name, icon_id)
+		VALUES (?, ?, ?, ?, ?)`,
 		appID,
 		label,
 		versionCode,
 		versionName,
+		iconID,
 	); err != nil {
 		_ = tx.Rollback()
 		return err
@@ -567,15 +601,15 @@ func (s *SQLite) DeleteSubmittedUpdate(appID string, versionCode int) error {
 
 func (s *SQLite) SubmitApp(appID string, ghID int64) error {
 	var label, path, versionName string
-	var versionCode int
+	var versionCode, iconID int
 	var issueGroupID *int
 	if err := s.db.QueryRow(
-		`SELECT label, version_code, version_name, path, issue_group_id
+		`SELECT label, version_code, version_name, path, icon_id, issue_group_id
 		FROM staging_apps
 		WHERE id = ? AND user_gh_id = ?`,
 		appID,
 		ghID,
-	).Scan(&label, &versionCode, &versionName, &path, &issueGroupID); err != nil {
+	).Scan(&label, &versionCode, &versionName, &path, &iconID, &issueGroupID); err != nil {
 		return err
 	}
 
@@ -590,11 +624,13 @@ func (s *SQLite) SubmitApp(appID string, ghID int64) error {
 			label,
 			version_code,
 			version_name,
+			icon_id,
 			reviewer_gh_id,
 			path,
 			issue_group_id
 		)
 		VALUES (
+			?,
 			?,
 			?,
 			?,
@@ -609,6 +645,7 @@ func (s *SQLite) SubmitApp(appID string, ghID int64) error {
 		label,
 		versionCode,
 		versionName,
+		iconID,
 		path,
 		issueGroupID,
 	); err != nil {

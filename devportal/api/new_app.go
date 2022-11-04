@@ -1,7 +1,12 @@
 package api
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"image"
+	_ "image/png"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,9 +21,30 @@ func NewApp(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
 	ghID := c.MustGet("gh_id").(int64)
 
-	file, err := c.FormFile("app")
+	formApp, err := c.FormFile("app")
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+	formIcon, err := c.FormFile("icon")
+	if err != nil {
+		_ = c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	// Check that image is a 512x512 PNG
+	formIconFile, err := formIcon.Open()
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	defer formIconFile.Close()
+	iconInfo, format, err := image.DecodeConfig(formIconFile)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusBadRequest, err)
+		return
+	} else if format != "png" || iconInfo.Width != 512 || iconInfo.Height != 512 {
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
 
@@ -28,14 +54,25 @@ func NewApp(c *gin.Context) {
 		return
 	}
 
-	filename := filepath.Join(dir, "app.apks")
-	if err := c.SaveUploadedFile(file, filename); err != nil {
+	appPath := filepath.Join(dir, "app.apks")
+	if err := c.SaveUploadedFile(formApp, appPath); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	iconPath := filepath.Join(dir, "icon.png")
+	outIconFile, err := os.Create(iconPath)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	defer outIconFile.Close()
+	if _, err := io.Copy(outIconFile, formIconFile); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	// We've received the (supposed) APK set. Now extract the app metadata.
-	apk, err := apkFromAPKSet(filename)
+	apk, err := apkFromAPKSet(appPath)
 	if err != nil {
 		if errors.Is(err, ErrFatalIO) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -56,13 +93,22 @@ func NewApp(c *gin.Context) {
 
 	m := apk.Manifest()
 
+	hasher := sha256.New()
+	if _, err := io.Copy(hasher, outIconFile); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	iconHash := hex.EncodeToString(hasher.Sum(nil))
+
 	if err := db.CreateApp(
 		m.Package,
 		ghID,
 		*m.Application.Label,
 		m.VersionCode,
 		m.VersionName,
-		filename,
+		appPath,
+		iconPath,
+		iconHash,
 		issues,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)

@@ -41,9 +41,10 @@ export class AppService {
         return this.http.delete<void>(`${this.pendingAppsUrl}/${appId}`);
     }
 
-    uploadApp(app: File): Observable<App> {
+    uploadApp(app: File, icon: File): Observable<App> {
         const formData = new FormData();
         formData.append("app", app);
+        formData.append("icon", icon);
 
         return this.http.post<App>(this.appsUrl, formData);
     }

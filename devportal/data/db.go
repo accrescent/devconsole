@@ -23,7 +23,9 @@ type DB interface {
 		label string,
 		versionCode int32,
 		versionName string,
-		path string,
+		appPath string,
+		iconPath string,
+		iconHash string,
 		issues []string,
 	) error
 	GetAppInfo(appID string) (versionCode int, err error)
@@ -38,8 +40,23 @@ type DB interface {
 	) error
 	GetSubmittedAppInfo(
 		appID string,
-	) (ghID int64, label string, versionCode int, versionName string, path string, err error)
-	PublishApp(appID string, label string, versionCode int, versionName string, ghID int64) error
+	) (
+		ghID int64,
+		label string,
+		versionCode int,
+		versionName string,
+		iconID int,
+		path string,
+		err error,
+	)
+	PublishApp(
+		appID string,
+		label string,
+		versionCode int,
+		versionName string,
+		iconID int,
+		ghID int64,
+	) error
 	CreateUser(ghID int64, email string) error
 	DeleteSubmittedApp(appID string) error
 	DeleteSubmittedUpdate(appID string, versionCode int) error

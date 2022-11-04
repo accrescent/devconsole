@@ -1,13 +1,36 @@
-<input #fileinput type="file" (change)="onFileChange($event)">
-<button
-    type="button"
-    mat-flat-button
-    color="primary"
-    (click)="fileinput.click()">
-    Select APK set
-</button>
+<form [formGroup]="uploadForm" (ngSubmit)="onUpload()">
+    <input id="app" #appinput type="file" formControlName="app">
+    <button
+        type="button"
+        mat-flat-button
+        color="primary"
+        (click)="appinput.click()">
+        Select APK set
+    </button>
+    <p>{{ uploadForm.value.app?.replace("C:\\fakepath\\", "") }}</p>
+    <br>
+    <input id="icon" #iconinput type="file" formControlName="icon">
+    <button
+        type="button"
+        mat-flat-button
+        color="primary"
+        (click)="iconinput.click()">
+        Select app icon
+    </button>
+    <p>{{ uploadForm.value.icon?.replace("C:\\fakepath\\", "") }}</p>
+    <br>
 
-<form *ngIf="app" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <button
+        type="submit"
+        [disabled]="uploadForm.invalid"
+        mat-flat-button
+        color="primary">
+        Submit
+    </button>
+</form>
+<br>
+
+<form *ngIf="app" [formGroup]="confirmationForm" (ngSubmit)="onConfirm()">
     <h2>App info</h2>
     <p>App ID: {{ app.app_id }}</p>
     <p>Display name: {{ app.label }}</p>
