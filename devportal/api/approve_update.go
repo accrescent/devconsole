@@ -15,8 +15,7 @@ import (
 func ApproveUpdate(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
 	appID := c.Param("id")
-	version := c.Param("version")
-	versionCode, err := strconv.Atoi(version)
+	versionCode, err := strconv.Atoi(c.Param("version"))
 	if err != nil {
 		_ = c.AbortWithError(http.StatusBadRequest, err)
 		return
