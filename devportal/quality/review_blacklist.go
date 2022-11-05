@@ -10,6 +10,7 @@ var permissionReviewBlacklist = []string{
 	"android.permission.PROCESS_OUTGOING_CALLS",
 	"android.permission.QUERY_ALL_PACKAGES",
 	"android.permission.READ_CALL_LOG",
+	"android.permission.READ_CONTACTS",
 	"android.permission.READ_EXTERNAL_STORAGE",
 	"android.permission.READ_PHONE_STATE",
 	"android.permission.READ_MEDIA_AUDIO",
