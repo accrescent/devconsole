@@ -5,6 +5,7 @@ var permissionReviewBlacklist = []string{
 	"android.permission.ACCESS_COARSE_LOCATION",
 	"android.permission.ACCESS_FINE_LOCATION",
 	"android.permission.BLUETOOTH_SCAN",
+	"android.permission.CAMERA",
 	"android.permission.MANAGE_EXTERNAL_STORAGE",
 	"android.permission.NEARBY_WIFI_DEVICES",
 	"android.permission.PROCESS_OUTGOING_CALLS",
