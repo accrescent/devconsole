@@ -19,6 +19,13 @@ export class AuthService {
         return this.http.get<LoginResult>(this.authCallbackUrl, { params });
     }
 
+    logOut(): void {
+        localStorage.removeItem('loggedIn');
+        localStorage.removeItem('registered');
+        localStorage.removeItem('reviewer');
+        localStorage.removeItem('publisher');
+    }
+
     get loggedIn(): boolean {
         return localStorage.getItem('loggedIn') === 'true';
     }

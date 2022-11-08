@@ -1,6 +1,6 @@
 import { NgModule, ErrorHandler } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,7 +10,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSnackBarModule, MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -28,6 +28,7 @@ import { ReviewComponent } from './review/review.component';
 import { AppListComponent } from './app-list/app-list.component';
 import { PublishComponent } from './publish/publish.component';
 import { GlobalErrorHandler } from './global-error-handler';
+import { AuthInterceptor } from './auth-interceptor';
 
 @NgModule({
     declarations: [
@@ -64,6 +65,13 @@ import { GlobalErrorHandler } from './global-error-handler';
     providers: [{
         provide: ErrorHandler,
         useClass: GlobalErrorHandler,
+    }, {
+        provide: HTTP_INTERCEPTORS,
+        useClass: AuthInterceptor,
+        multi: true,
+    }, {
+        provide: MAT_SNACK_BAR_DEFAULT_OPTIONS,
+        useValue: { duration: 5000 },
     }],
     bootstrap: [AppComponent]
 })

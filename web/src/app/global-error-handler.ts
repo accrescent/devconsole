@@ -16,7 +16,6 @@ export class GlobalErrorHandler implements ErrorHandler {
         ) {
             this.zone.run(() => {
                 this.snackbar.open("Error: " + error.error.error, '', {
-                    duration: 5000,
                     panelClass: 'snackbar-error',
                 });
             });
