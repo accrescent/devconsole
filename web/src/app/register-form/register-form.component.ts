@@ -23,7 +23,7 @@ export class RegisterFormComponent implements OnInit {
     ngOnInit(): void {
         this.registerService.getEmails().subscribe(emails =>
             emails.forEach((email, _) => this.emails.push(email))
-        )
+        );
     }
 
     onSubmit(): void {

@@ -36,7 +36,8 @@
           }
         ],
         "@typescript-eslint/explicit-function-return-type": "error",
-        "indent": ["error", 4]
+        "indent": ["error", 4],
+        "semi": ["error", "always"]
       }
     },
     {

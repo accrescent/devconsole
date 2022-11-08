@@ -10,7 +10,7 @@ import { Email } from './email';
 })
 export class RegisterService {
     private readonly registerUrl = 'api/register';
-    private readonly emailsUrl = 'api/emails'
+    private readonly emailsUrl = 'api/emails';
 
     constructor(private http: HttpClient) {}
 
