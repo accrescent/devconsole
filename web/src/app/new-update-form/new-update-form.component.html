@@ -6,6 +6,7 @@
     (click)="fileinput.click()">
     Select APK set
 </button>
+<p>{{ fileinput.value.replace("C:\\fakepath\\", "") }}</p>
 
 <form *ngIf="app" [formGroup]="form" (ngSubmit)="onSubmit()">
     <h2>Update info</h2>
