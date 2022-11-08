@@ -10,7 +10,7 @@ import { LoginResult } from './login-result';
 })
 export class AuthService {
     private readonly authCallbackUrl = 'api/auth/github/callback';
-    private readonly logOutUrl = 'api/logout';
+    private readonly sessionUrl = 'api/session';
 
     constructor(private http: HttpClient) {}
 
@@ -26,7 +26,7 @@ export class AuthService {
         localStorage.removeItem('reviewer');
         localStorage.removeItem('publisher');
 
-        return this.http.post<void>(this.logOutUrl, '');
+        return this.http.delete<void>(this.sessionUrl);
     }
 
     get loggedIn(): boolean {

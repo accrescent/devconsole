@@ -75,7 +75,7 @@ func main() {
 	reviewer.DELETE("/api/updates/:id/:version", api.RejectUpdate)
 	auth.GET("/api/approved-apps", middleware.SignerRequired(), api.GetApprovedApps)
 	auth.POST("/api/register", api.Register)
-	auth.POST("/api/logout", api.LogOut)
+	auth.DELETE("/api/session", api.LogOut)
 	auth.GET("/api/apps", api.GetApps)
 	auth.POST("/api/apps", api.NewApp)
 	auth.PATCH("/api/apps/:id", api.SubmitApp)
