@@ -53,7 +53,7 @@ func NewUpdate(c *gin.Context) {
 		if errors.Is(err, ErrFatalIO) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 		} else {
-			msg := "app is in incorrect format. Make sure you upload an APK set."
+			msg := "App is in incorrect format. Make sure you upload an APK set."
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": msg})
 		}
 		return
@@ -73,7 +73,7 @@ func NewUpdate(c *gin.Context) {
 	}
 	if int(m.VersionCode) <= versionCode {
 		err := fmt.Sprintf(
-			"version %d is not more than current version %d",
+			"Version %d is not more than current version %d",
 			m.VersionCode, versionCode,
 		)
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err})

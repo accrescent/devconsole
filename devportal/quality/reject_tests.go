@@ -14,15 +14,15 @@ func RunRejectTests(apk *apk.APK, uploadType UploadType) error {
 	// Target SDK
 	switch {
 	case targetSDK == nil:
-		return errors.New("required field 'targetSdk' not found")
+		return errors.New("Required field 'targetSdk' not found")
 	case uploadType == NewApp && *targetSDK < MIN_TARGET_SDK_NEW_APP:
 		return fmt.Errorf(
-			"app target SDK is %d but the minimum is %d",
+			"App target SDK is %d but the minimum is %d",
 			*targetSDK, MIN_TARGET_SDK_NEW_APP,
 		)
 	case uploadType == Update && *targetSDK < MIN_TARGET_SDK_UPDATE:
 		return fmt.Errorf(
-			"app target SDK is %d but the minimum is %d",
+			"App target SDK is %d but the minimum is %d",
 			*targetSDK, MIN_TARGET_SDK_UPDATE,
 		)
 	}
