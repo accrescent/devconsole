@@ -10,6 +10,7 @@ import { LoginResult } from './login-result';
 })
 export class AuthService {
     private readonly authCallbackUrl = 'api/auth/github/callback';
+    private readonly logOutUrl = 'api/logout';
 
     constructor(private http: HttpClient) {}
 
@@ -19,11 +20,13 @@ export class AuthService {
         return this.http.get<LoginResult>(this.authCallbackUrl, { params });
     }
 
-    logOut(): void {
+    logOut(): Observable<void> {
         localStorage.removeItem('loggedIn');
         localStorage.removeItem('registered');
         localStorage.removeItem('reviewer');
         localStorage.removeItem('publisher');
+
+        return this.http.post<void>(this.logOutUrl, '');
     }
 
     get loggedIn(): boolean {
