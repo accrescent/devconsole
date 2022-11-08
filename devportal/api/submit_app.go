@@ -18,9 +18,11 @@ func SubmitApp(c *gin.Context) {
 
 	if err := db.SubmitApp(appID, ghID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			_ = c.AbortWithError(http.StatusNotFound, err)
+			msg := "nothing to submit. Try uploading and submitting again"
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": msg})
 		} else if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
-			_ = c.AbortWithError(http.StatusConflict, err)
+			msg := "you've already submitted an app with this ID"
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": msg})
 		} else {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 		}

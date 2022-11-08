@@ -38,7 +38,8 @@ func Register(c *gin.Context) {
 	// Register user
 	if err := db.CreateUser(ghID, input.Email); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
-			_ = c.AbortWithError(http.StatusConflict, err)
+			msg := "you are already registered"
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": msg})
 		} else {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 		}

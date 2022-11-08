@@ -53,7 +53,8 @@ func NewUpdate(c *gin.Context) {
 		if errors.Is(err, ErrFatalIO) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 		} else {
-			_ = c.AbortWithError(http.StatusBadRequest, err)
+			msg := "app is in incorrect format. Make sure you upload an APK set."
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": msg})
 		}
 		return
 	}

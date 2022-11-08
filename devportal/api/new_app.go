@@ -40,11 +40,9 @@ func NewApp(c *gin.Context) {
 	}
 	defer formIconFile.Close()
 	iconInfo, format, err := image.DecodeConfig(formIconFile)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusBadRequest, err)
-		return
-	} else if format != "png" || iconInfo.Width != 512 || iconInfo.Height != 512 {
-		c.AbortWithStatus(http.StatusBadRequest)
+	if err != nil || format != "png" || iconInfo.Width != 512 || iconInfo.Height != 512 {
+		msg := "icon must be a 512x512 PNG"
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": msg})
 		return
 	}
 
@@ -77,7 +75,8 @@ func NewApp(c *gin.Context) {
 		if errors.Is(err, ErrFatalIO) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 		} else {
-			_ = c.AbortWithError(http.StatusBadRequest, err)
+			msg := "app is in incorrect format. Make sure you upload an APK set."
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": msg})
 		}
 		return
 	}
