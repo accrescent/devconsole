@@ -19,7 +19,7 @@ these steps:
    `GH_CLIENT_SECRET`. Store the app's client ID as `GH_CLIENT_ID`. Store the
    authorization callback URL as `OAUTH2_REDIRECT_URL`.
 3. Set `SIGNER_GH_ID` to the value of the `id` field from
-   https://api.github.com/users/\<username\>.
+   `https://api.github.com/users/<username>`.
 4. Set `REPO_URL` to `http://repo:8080`.
 5. Set `API_KEY` to the same string in both `devportal/.env` and
    `reposerver/.env`.
