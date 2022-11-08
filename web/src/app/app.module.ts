@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -10,6 +10,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -26,6 +27,7 @@ import { LoginComponent } from './login/login.component';
 import { ReviewComponent } from './review/review.component';
 import { AppListComponent } from './app-list/app-list.component';
 import { PublishComponent } from './publish/publish.component';
+import { GlobalErrorHandler } from './global-error-handler';
 
 @NgModule({
     declarations: [
@@ -55,10 +57,14 @@ import { PublishComponent } from './publish/publish.component';
         MatRadioModule,
         MatSidenavModule,
         MatToolbarModule,
+        MatSnackBarModule,
         ReactiveFormsModule,
         AppRoutingModule
     ],
-    providers: [],
+    providers: [{
+        provide: ErrorHandler,
+        useClass: GlobalErrorHandler,
+    }],
     bootstrap: [AppComponent]
 })
 export class AppModule { }
