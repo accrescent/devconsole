@@ -7,6 +7,7 @@
             <li *ngFor="let issue of app.issues"><code>{{ issue }}</code></li>
             <li *ngIf="!app.issues">None</li>
         </ul>
+        <a [href]="'/api/pending-apps/'+app.app_id+'/apks'" mat-stroked-button>Download</a>
     </mat-card-content>
     <mat-card-actions align="end">
         <button (click)="approveApp(app.app_id)" mat-button>Approve</button>
@@ -23,12 +24,16 @@
             <li *ngFor="let issue of update.issues"><code>{{ issue }}</code></li>
             <li *ngIf="!update.issues">None</li>
         </ul>
-
         <h4>Update info</h4>
         <ul>
             <li>Version code: {{ update.version_code }}</li>
             <li>Version name: {{ update.version_name }}</li>
         </ul>
+        <a
+            [href]="'/api/updates/' + update.app_id + '/' + update.version_code + '/apks'"
+            mat-stroked-button>
+            Download
+        </a>
     </mat-card-content>
     <mat-card-actions align="end">
         <button (click)="approveUpdate(update.app_id, update.version_code)" mat-button>
