@@ -32,10 +32,32 @@
 
 <form *ngIf="app" [formGroup]="confirmationForm" (ngSubmit)="onConfirm()">
     <h2>App info</h2>
-    <p>App ID: {{ app.app_id }}</p>
-    <p>Display name: {{ app.label }}</p>
-    <p>Version code: {{ app.version_code }}</p>
-    <p>Version name: {{ app.version_name }}</p>
+    <mat-form-field appearance="fill">
+        <mat-label>App ID</mat-label>
+        <input type="text" value="{{ app.app_id }}" disabled matInput>
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+        <mat-label>Display name</mat-label>
+        <input type="text" required formControlName="label" matInput>
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+        <mat-label>Version code</mat-label>
+        <input type="text" value="{{ app.version_code }}" disabled matInput>
+    </mat-form-field>
+    <br>
+    <mat-form-field appearance="fill">
+        <mat-label>Version name</mat-label>
+        <input type="text" value="{{ app.version_name }}" disabled matInput>
+    </mat-form-field>
+    <br>
 
-    <button type="submit" mat-flat-button color="primary">Submit</button>
+    <button
+        type="submit"
+        [disabled]="confirmationForm.invalid"
+        mat-flat-button
+        color="primary">
+        Submit
+    </button>
 </form>

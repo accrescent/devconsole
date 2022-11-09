@@ -16,7 +16,9 @@ export class NewAppFormComponent {
         app: ['', Validators.required],
         icon: ['', Validators.required],
     });
-    confirmationForm = this.fb.group({});
+    confirmationForm = this.fb.group({
+        label: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30)]],
+    });
 
     constructor(
         private fb: NonNullableFormBuilder,
@@ -29,12 +31,16 @@ export class NewAppFormComponent {
         const icon = (<HTMLInputElement>document.getElementById("icon")).files?.[0];
 
         if (app !== undefined && icon !== undefined) {
-            this.appService.uploadApp(app, icon).subscribe(app => this.app = app);
+            this.appService.uploadApp(app, icon).subscribe(app => {
+                this.app = app;
+                this.confirmationForm.patchValue({ label: app.label });
+            });
         }
     }
 
     onConfirm(): void {
-        this.appService.submitApp(this.app!.app_id)
+        const label = this.confirmationForm.getRawValue().label;
+        this.appService.submitApp(this.app!.app_id, label)
             .subscribe(_ => this.router.navigate(['dashboard']));
     }
 }

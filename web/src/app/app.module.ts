@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -54,6 +55,7 @@ import { AuthInterceptor } from './auth-interceptor';
         MatButtonModule,
         MatCardModule,
         MatIconModule,
+        MatInputModule,
         MatListModule,
         MatRadioModule,
         MatSidenavModule,

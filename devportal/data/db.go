@@ -48,7 +48,7 @@ type DB interface {
 		iconID int,
 		ghID int64,
 	) error
-	SubmitApp(appID string, ghID int64) error
+	SubmitApp(appID string, label string, ghID int64) error
 	DeleteSubmittedApp(appID string) error
 
 	CreateUpdate(

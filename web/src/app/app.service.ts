@@ -56,8 +56,8 @@ export class AppService {
         return this.http.post<App>(`${this.appsUrl}/${appId}/updates`, formData);
     }
 
-    submitApp(id: string): Observable<void> {
-        return this.http.patch<void>(`${this.appsUrl}/${id}`, '');
+    submitApp(id: string, label: string): Observable<void> {
+        return this.http.patch<void>(`${this.appsUrl}/${id}`, { label });
     }
 
     submitUpdate(id: string, versionCode: number): Observable<void> {

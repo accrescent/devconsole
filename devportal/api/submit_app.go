@@ -16,7 +16,18 @@ func SubmitApp(c *gin.Context) {
 	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("id")
 
-	if err := db.SubmitApp(appID, ghID); err != nil {
+	var input struct {
+		Label string `json:"label" binding:"required"`
+	}
+	if err := c.BindJSON(&input); err != nil {
+		return
+	}
+	if len(input.Label) < 3 || len(input.Label) > 30 {
+		c.AbortWithStatus(http.StatusUnprocessableEntity)
+		return
+	}
+
+	if err := db.SubmitApp(appID, input.Label, ghID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			msg := "Nothing to submit. Try uploading and submitting again"
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": msg})

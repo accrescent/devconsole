@@ -453,17 +453,17 @@ func (s *SQLite) PublishApp(
 	return tx.Commit()
 }
 
-func (s *SQLite) SubmitApp(appID string, ghID int64) error {
-	var label, path, versionName string
+func (s *SQLite) SubmitApp(appID string, label string, ghID int64) error {
+	var path, versionName string
 	var versionCode, iconID int
 	var issueGroupID *int
 	if err := s.db.QueryRow(
-		`SELECT label, version_code, version_name, path, icon_id, issue_group_id
+		`SELECT version_code, version_name, path, icon_id, issue_group_id
 		FROM staging_apps
 		WHERE id = ? AND user_gh_id = ?`,
 		appID,
 		ghID,
-	).Scan(&label, &versionCode, &versionName, &path, &iconID, &issueGroupID); err != nil {
+	).Scan(&versionCode, &versionName, &path, &iconID, &issueGroupID); err != nil {
 		return err
 	}
 
