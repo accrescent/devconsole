@@ -4,7 +4,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { App } from './app';
-import { PendingApp } from './pending-app';
 
 @Injectable({
     providedIn: 'root'
@@ -21,12 +20,12 @@ export class AppService {
         return this.http.get<App[]>(this.appsUrl);
     }
 
-    getPendingApps(): Observable<PendingApp[]> {
-        return this.http.get<PendingApp[]>(this.pendingAppsUrl);
+    getPendingApps(): Observable<App[]> {
+        return this.http.get<App[]>(this.pendingAppsUrl);
     }
 
-    getUpdates(): Observable<PendingApp[]> {
-        return this.http.get<PendingApp[]>(this.updatesUrl);
+    getUpdates(): Observable<App[]> {
+        return this.http.get<App[]>(this.updatesUrl);
     }
 
     getApprovedApps(): Observable<App[]> {

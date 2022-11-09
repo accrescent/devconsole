@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
+import { App } from '../app';
 import { AppService } from '../app.service';
-import { PendingApp } from '../pending-app';
 
 @Component({
     selector: 'app-review',
@@ -9,8 +9,8 @@ import { PendingApp } from '../pending-app';
     styleUrls: ['./review.component.css']
 })
 export class ReviewComponent implements OnInit {
-    apps: PendingApp[] = [];
-    updates: PendingApp[] = [];
+    apps: App[] = [];
+    updates: App[] = [];
 
     constructor(private appService: AppService) {}
 
