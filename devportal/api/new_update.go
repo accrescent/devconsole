@@ -35,20 +35,8 @@ func NewUpdate(c *gin.Context) {
 		return
 	}
 
-	dir, err := os.MkdirTemp("/", "")
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
-	filename := filepath.Join(dir, "app.apks")
-	if err := c.SaveUploadedFile(file, filename); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
 	// We've received the (supposed) APK set. Now extract the app metadata.
-	apk, err := apkFromAPKSet(filename)
+	apk, appFile, err := openAPKSet(file)
 	if err != nil {
 		if errors.Is(err, ErrFatalIO) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -58,6 +46,7 @@ func NewUpdate(c *gin.Context) {
 		}
 		return
 	}
+	defer appFile.Close()
 
 	m := apk.Manifest()
 
@@ -81,6 +70,18 @@ func NewUpdate(c *gin.Context) {
 	}
 	if err := quality.RunRejectTests(apk, quality.Update); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	// App passed all automated checks, so save it to disk
+	dir, err := os.MkdirTemp("/", "")
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	filename := filepath.Join(dir, "app.apks")
+	if err := saveFile(appFile, filename); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
