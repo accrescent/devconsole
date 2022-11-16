@@ -6,7 +6,8 @@
   ],
   "lockFileMaintenance": {
     "enabled": true,
-    "commitMessageAction": "Update lock file"
+    "commitMessageAction": "Update lock file",
+    "schedule": ["before 4pm on Tuesday"]
   },
   "postUpdateOptions": [
     "gomodTidy",
@@ -15,7 +16,7 @@
   "packageRules": [
     {
       "matchPackageNames": ["golang.org/x/exp"],
-      "extends": ["schedule:weekly"]
+      "schedule": ["before 4pm on Tuesday"]
     }
   ]
 }
