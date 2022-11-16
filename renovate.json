@@ -5,7 +5,8 @@
     ":disableDependencyDashboard"
   ],
   "lockFileMaintenance": {
-    "enabled": true
+    "enabled": true,
+    "commitMessageAction": "Update lock file"
   },
   "postUpdateOptions": [
     "gomodTidy",
