@@ -4,6 +4,9 @@
     "config:base",
     ":disableDependencyDashboard"
   ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
   "postUpdateOptions": [
     "gomodTidy",
     "gomodUpdateImportPaths"
