@@ -20,9 +20,9 @@ func publish(
 
 	var method string
 	if uploadType == quality.NewApp {
-		method = "POST"
+		method = http.MethodPost
 	} else if uploadType == quality.Update {
-		method = "PUT"
+		method = http.MethodPut
 	}
 
 	apkSet, err := os.Open(apkSetPath)
