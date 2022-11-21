@@ -15,7 +15,7 @@ export class GlobalErrorHandler implements ErrorHandler {
             Object.hasOwn(error.error, 'error')
         ) {
             this.zone.run(() => {
-                this.snackbar.open(error.error.error, '', { panelClass: 'snackbar-error' });
+                this.snackbar.open(error.error.error);
             });
         } else {
             console.error(error);
