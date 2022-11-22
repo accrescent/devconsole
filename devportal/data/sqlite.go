@@ -8,11 +8,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-type SQLite struct {
-	db *sql.DB
-}
-
-func (s *SQLite) Open(dsn string) error {
+func init() {
 	sql.Register(
 		"sqlite3_hardened",
 		&sqlite3.SQLiteDriver{
@@ -22,6 +18,13 @@ func (s *SQLite) Open(dsn string) error {
 			},
 		},
 	)
+}
+
+type SQLite struct {
+	db *sql.DB
+}
+
+func (s *SQLite) Open(dsn string) error {
 	conn, err := sql.Open("sqlite3_hardened", dsn)
 	if err != nil {
 		return err
