@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"strings"
 	"time"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 type SQLite struct {
@@ -11,7 +13,16 @@ type SQLite struct {
 }
 
 func (s *SQLite) Open() error {
-	conn, err := sql.Open("sqlite3", "devportal.db?_fk=yes&_journal=WAL")
+	sql.Register(
+		"sqlite3_hardened",
+		&sqlite3.SQLiteDriver{
+			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
+				_, err := conn.Exec("PRAGMA trusted_schema = OFF", nil)
+				return err
+			},
+		},
+	)
+	conn, err := sql.Open("sqlite3_hardened", "devportal.db?_fk=yes&_journal=WAL")
 	if err != nil {
 		return err
 	}
