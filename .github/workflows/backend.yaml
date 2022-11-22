@@ -16,7 +16,6 @@ jobs:
       - name: Build reposerver
         run: cd reposerver && go build -v
   lint:
-    name: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
