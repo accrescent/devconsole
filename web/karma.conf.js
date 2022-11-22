@@ -39,6 +39,11 @@ module.exports = function (config) {
     autoWatch: true,
     browsers: ['Chrome'],
     singleRun: false,
-    restartOnFileChange: true
+    restartOnFileChange: true,
+    customHeaders: [{
+      match: '.*',
+      name: 'Content-Security-Policy',
+      value: "trusted-types angular; require-trusted-types-for 'script';"
+    }]
   });
 };
