@@ -8,12 +8,14 @@ func TestSQLite_Open(t *testing.T) {
 		t.Fatal("failed to open database:", err)
 	}
 
-	var trustedSchema bool
-	if err := s.db.QueryRow("PRAGMA trusted_schema").Scan(&trustedSchema); err != nil {
-		t.Fatal("failed to read trusted_schema:", err)
-	}
+	t.Run("trusted_schema value", func(t *testing.T) {
+		var trustedSchema bool
+		if err := s.db.QueryRow("PRAGMA trusted_schema").Scan(&trustedSchema); err != nil {
+			t.Fatal("failed to read trusted_schema:", err)
+		}
 
-	if trustedSchema {
-		t.Error("trusted_schema is ON")
-	}
+		if trustedSchema {
+			t.Error("trusted_schema is ON")
+		}
+	})
 }
