@@ -146,6 +146,10 @@ func (s *SQLite) Initialize() error {
 	return nil
 }
 
+func (s *SQLite) Close() error {
+	return s.db.Close()
+}
+
 func (s *SQLite) CreateSession(id string, ghID int64, accessToken string) error {
 	_, err := s.db.Exec(
 		"INSERT INTO sessions (id, gh_id, access_token, expiry_time) VALUES (?, ?, ?, ?)",

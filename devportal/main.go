@@ -34,6 +34,7 @@ func main() {
 	if err := db.Open("devportal.db?_fk=yes&_journal=WAL"); err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 	if err := db.Initialize(); err != nil {
 		log.Fatal(err)
 	}
