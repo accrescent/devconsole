@@ -1,7 +1,7 @@
 package data
 
 type DB interface {
-	Open() error
+	Open(dsn string) error
 	Initialize() error
 
 	CreateSession(id string, ghID int64, accessToken string) error

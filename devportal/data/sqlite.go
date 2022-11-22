@@ -12,7 +12,7 @@ type SQLite struct {
 	db *sql.DB
 }
 
-func (s *SQLite) Open() error {
+func (s *SQLite) Open(dsn string) error {
 	sql.Register(
 		"sqlite3_hardened",
 		&sqlite3.SQLiteDriver{
@@ -22,7 +22,7 @@ func (s *SQLite) Open() error {
 			},
 		},
 	)
-	conn, err := sql.Open("sqlite3_hardened", "devportal.db?_fk=yes&_journal=WAL")
+	conn, err := sql.Open("sqlite3_hardened", dsn)
 	if err != nil {
 		return err
 	}

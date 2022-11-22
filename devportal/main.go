@@ -31,7 +31,7 @@ func main() {
 	}
 
 	db := new(data.SQLite)
-	if err := db.Open(); err != nil {
+	if err := db.Open("devportal.db?_fk=yes&_journal=WAL"); err != nil {
 		log.Fatal(err)
 	}
 	if err := db.Initialize(); err != nil {
