@@ -96,4 +96,14 @@ func TestSQLiteSession(t *testing.T) {
 			t.Errorf("access token is %s but expected %s", token, testToken)
 		}
 	})
+
+	t.Run("delete", func(t *testing.T) {
+		if err := s.DeleteSession(sessionID); err != nil {
+			t.Fatal("failed to delete session:", err)
+		}
+
+		if _, _, err := s.GetSessionInfo(sessionID); err == nil {
+			t.Error("get after delete succeeded")
+		}
+	})
 }
