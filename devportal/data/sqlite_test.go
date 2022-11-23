@@ -1,6 +1,9 @@
 package data
 
-import "testing"
+import (
+	"encoding/hex"
+	"testing"
+)
 
 func testOpenSQLite(t testing.TB) *SQLite {
 	s := new(SQLite)
@@ -54,4 +57,43 @@ func TestSQLiteClose(t *testing.T) {
 	if _, _, err := s.GetUserRoles(123456); err == nil {
 		t.Error("query after close succeeded")
 	}
+}
+
+func TestSQLiteSession(t *testing.T) {
+	s := testCreateSQLite(t)
+	defer s.Close()
+
+	var testGHID int64 = 123456
+	testToken := "token-1234"
+	testSIDLen := 16
+
+	sessionID, err := s.CreateSession(testGHID, testToken)
+	if err != nil {
+		t.Fatal("failed to create session:", err)
+	}
+
+	t.Run("session ID properties", func(t *testing.T) {
+		decoded, err := hex.DecodeString(sessionID)
+		if err != nil {
+			t.Error("session ID is not hex encoded:", err)
+		}
+		decodedLen := len(decoded)
+		if decodedLen != testSIDLen {
+			t.Errorf("session ID length is %d but expected %d", decodedLen, testSIDLen)
+		}
+	})
+
+	t.Run("get", func(t *testing.T) {
+		ghID, token, err := s.GetSessionInfo(sessionID)
+		if err != nil {
+			t.Fatal("failed to get session:", err)
+		}
+
+		if ghID != testGHID {
+			t.Errorf("GitHub ID is %d but expected %d", ghID, testGHID)
+		}
+		if token != testToken {
+			t.Errorf("access token is %s but expected %s", token, testToken)
+		}
+	})
 }
