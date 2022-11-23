@@ -11,6 +11,15 @@ func testOpenSQLite(t testing.TB) *SQLite {
 	return s
 }
 
+func testCreateSQLite(t testing.TB) *SQLite {
+	s := testOpenSQLite(t)
+	if err := s.Initialize(); err != nil {
+		t.Fatal("failed to initialize database:", err)
+	}
+
+	return s
+}
+
 func TestSQLiteOpen(t *testing.T) {
 	s := testOpenSQLite(t)
 	defer s.Close()
@@ -28,20 +37,13 @@ func TestSQLiteOpen(t *testing.T) {
 }
 
 func TestSQLiteInitialize(t *testing.T) {
-	s := testOpenSQLite(t)
+	s := testCreateSQLite(t)
 	defer s.Close()
-
-	if err := s.Initialize(); err != nil {
-		t.Fatal("failed to initialize database:", err)
-	}
 }
 
 func TestSQLiteClose(t *testing.T) {
-	s := testOpenSQLite(t)
+	s := testCreateSQLite(t)
 	defer s.Close()
-	if err := s.Initialize(); err != nil {
-		t.Fatal("failed to initialize database:", err)
-	}
 
 	if err := s.CreateUser(123456, "example@example.com"); err != nil {
 		t.Fatal("failed to create user")
