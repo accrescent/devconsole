@@ -2,11 +2,17 @@ package data
 
 import "testing"
 
-func TestSQLiteOpen(t *testing.T) {
+func testOpenSQLite(t testing.TB) *SQLite {
 	s := new(SQLite)
 	if err := s.Open(":memory:"); err != nil {
 		t.Fatal("failed to open database:", err)
 	}
+
+	return s
+}
+
+func TestSQLiteOpen(t *testing.T) {
+	s := testOpenSQLite(t)
 	defer s.Close()
 
 	t.Run("trusted_schema value", func(t *testing.T) {
@@ -22,10 +28,7 @@ func TestSQLiteOpen(t *testing.T) {
 }
 
 func TestSQLiteClose(t *testing.T) {
-	s := new(SQLite)
-	if err := s.Open(":memory:"); err != nil {
-		t.Fatal("failed to open database:", err)
-	}
+	s := testOpenSQLite(t)
 	defer s.Close()
 	if err := s.Initialize(); err != nil {
 		t.Fatal("failed to initialize database:", err)
