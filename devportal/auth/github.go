@@ -82,24 +82,18 @@ func GitHubCallback(c *gin.Context) {
 	}
 
 	// Add session
-	sid := make([]byte, 16)
-	if _, err := rand.Read(sid); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	sidStr := hex.EncodeToString(sid)
-
 	if err := db.DeleteExpiredSessions(); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if err := db.CreateSession(sidStr, *user.ID, token.AccessToken); err != nil {
+	sessionID, err := db.CreateSession(*user.ID, token.AccessToken)
+	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	c.SetSameSite(http.SameSiteStrictMode)
-	c.SetCookie(SessionCookie, sidStr, 24*60*60, "/", "", true, true) // Max-Age 1 day
+	c.SetCookie(SessionCookie, sessionID, 24*60*60, "/", "", true, true) // Max-Age 1 day
 
 	registered, reviewer, err := db.GetUserRoles(*user.ID)
 	if err != nil {

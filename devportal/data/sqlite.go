@@ -1,7 +1,9 @@
 package data
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/hex"
 	"strings"
 	"time"
 
@@ -150,8 +152,14 @@ func (s *SQLite) Close() error {
 	return s.db.Close()
 }
 
-func (s *SQLite) CreateSession(id string, ghID int64, accessToken string) error {
-	_, err := s.db.Exec(
+func (s *SQLite) CreateSession(ghID int64, accessToken string) (id string, err error) {
+	randBytes := make([]byte, 16)
+	if _, err = rand.Read(randBytes); err != nil {
+		return
+	}
+	id = hex.EncodeToString(randBytes)
+
+	_, err = s.db.Exec(
 		"INSERT INTO sessions (id, gh_id, access_token, expiry_time) VALUES (?, ?, ?, ?)",
 		id,
 		ghID,
@@ -159,7 +167,7 @@ func (s *SQLite) CreateSession(id string, ghID int64, accessToken string) error 
 		time.Now().Add(24*time.Hour).Unix(),
 	)
 
-	return err
+	return
 }
 
 func (s *SQLite) GetSessionInfo(id string) (ghID int64, accessToken string, err error) {

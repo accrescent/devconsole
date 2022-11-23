@@ -5,7 +5,7 @@ type DB interface {
 	Initialize() error
 	Close() error
 
-	CreateSession(id string, ghID int64, accessToken string) error
+	CreateSession(ghID int64, accessToken string) (id string, err error)
 	GetSessionInfo(id string) (ghId int64, accessToken string, err error)
 	DeleteExpiredSessions() error
 	DeleteSession(id string) error
