@@ -27,6 +27,15 @@ func TestSQLiteOpen(t *testing.T) {
 	})
 }
 
+func TestSQLiteInitialize(t *testing.T) {
+	s := testOpenSQLite(t)
+	defer s.Close()
+
+	if err := s.Initialize(); err != nil {
+		t.Fatal("failed to initialize database:", err)
+	}
+}
+
 func TestSQLiteClose(t *testing.T) {
 	s := testOpenSQLite(t)
 	defer s.Close()
