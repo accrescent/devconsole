@@ -39,7 +39,7 @@ func SubmitUpdate(c *gin.Context) {
 
 	if issueGroupID == nil {
 		// No review necessary, so publish the update immediately.
-		if err := publish(c, appID, versionCode, versionName,
+		if err := publish(c, appID, int32(versionCode), versionName,
 			quality.Update, path,
 		); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -47,7 +47,13 @@ func SubmitUpdate(c *gin.Context) {
 		}
 	}
 
-	err = db.SubmitUpdate(appID, label, versionCode, versionName, path, issueGroupID)
+	app := data.App{
+		AppID:       appID,
+		Label:       label,
+		VersionCode: int32(versionCode),
+		VersionName: versionName,
+	}
+	err = db.SubmitUpdate(app, path, issueGroupID)
 	if err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintUnique) {
 			_ = c.AbortWithError(http.StatusConflict, err)

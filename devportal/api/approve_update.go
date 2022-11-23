@@ -36,7 +36,7 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
-	if err := publish(c, appID, versionCode, versionName, quality.Update, path); err != nil {
+	if err := publish(c, appID, int32(versionCode), versionName, quality.Update, path); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

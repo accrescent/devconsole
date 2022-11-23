@@ -101,15 +101,19 @@ func NewApp(c *gin.Context) {
 	iconHash := hex.EncodeToString(hasher.Sum(nil))
 
 	if err := db.CreateApp(
-		m.Package,
+		data.AppWithIssues{
+			App: data.App{
+				AppID:       m.Package,
+				Label:       *m.Application.Label,
+				VersionCode: m.VersionCode,
+				VersionName: m.VersionName,
+			},
+			Issues: issues,
+		},
 		ghID,
-		*m.Application.Label,
-		m.VersionCode,
-		m.VersionName,
 		appPath,
 		iconPath,
 		iconHash,
-		issues,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return

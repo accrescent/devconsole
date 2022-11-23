@@ -13,7 +13,7 @@ import (
 )
 
 func publish(
-	c *gin.Context, appID string, versionCode int, versionName string,
+	c *gin.Context, appID string, versionCode int32, versionName string,
 	uploadType quality.UploadType, apkSetPath string,
 ) error {
 	conf := c.MustGet("config").(config.Config)

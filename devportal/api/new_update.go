@@ -89,13 +89,17 @@ func NewUpdate(c *gin.Context) {
 	issues := quality.RunReviewTests(apk)
 
 	if err := db.CreateUpdate(
-		m.Package,
+		data.AppWithIssues{
+			App: data.App{
+				AppID:       m.Package,
+				Label:       *m.Application.Label,
+				VersionCode: m.VersionCode,
+				VersionName: m.VersionName,
+			},
+			Issues: issues,
+		},
 		ghID,
-		*m.Application.Label,
-		m.VersionCode,
-		m.VersionName,
 		filename,
-		issues,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return

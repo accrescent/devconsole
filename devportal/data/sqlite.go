@@ -221,22 +221,18 @@ func (s *SQLite) GetUserRoles(ghID int64) (registered bool, reviewer bool, err e
 }
 
 func (s *SQLite) CreateApp(
-	id string,
+	app AppWithIssues,
 	ghID int64,
-	label string,
-	versionCode int32,
-	versionName string,
 	appPath string,
 	iconPath string,
 	iconHash string,
-	issues []string,
 ) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
 	var issueGroupID *int64
-	if len(issues) > 0 {
+	if len(app.Issues) > 0 {
 		res, err := tx.Exec("INSERT INTO issue_groups DEFAULT VALUES")
 		if err != nil {
 			_ = tx.Rollback()
@@ -251,7 +247,7 @@ func (s *SQLite) CreateApp(
 		insertQuery := "INSERT INTO issues (id, issue_group_id) VALUES "
 		var inserts []string
 		var params []interface{}
-		for _, issue := range issues {
+		for _, issue := range app.Issues {
 			inserts = append(inserts, "(?, ?)")
 			params = append(params, issue, groupID)
 		}
@@ -283,11 +279,11 @@ func (s *SQLite) CreateApp(
 			issue_group_id
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		id,
+		app.AppID,
 		ghID,
-		label,
-		versionCode,
-		versionName,
+		app.Label,
+		app.VersionCode,
+		app.VersionName,
 		appPath,
 		iconID,
 		issueGroupID,
@@ -321,7 +317,7 @@ func (s *SQLite) GetApprovedApps() ([]App, error) {
 	var apps []App
 	for rows.Next() {
 		var appID, label, versionName string
-		var versionCode int
+		var versionCode int32
 		if err := rows.Scan(&appID, &label, &versionCode, &versionName); err != nil {
 			return []App{}, err
 		}
@@ -349,7 +345,7 @@ func (s *SQLite) GetApps(ghID int64) ([]App, error) {
 	var apps []App
 	for rows.Next() {
 		var appID, label, versionName string
-		var versionCode int
+		var versionCode int32
 		if err := rows.Scan(&appID, &label, &versionCode, &versionName); err != nil {
 			return []App{}, err
 		}
@@ -375,7 +371,7 @@ func (s *SQLite) GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error) {
 	var apps []AppWithIssues
 	for dbApps.Next() {
 		var appID, label, versionName string
-		var versionCode int
+		var versionCode int32
 		var issueGroupID *int
 		if err := dbApps.Scan(
 			&appID,
@@ -415,20 +411,19 @@ func (s *SQLite) GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error) {
 func (s *SQLite) GetSubmittedAppInfo(
 	appID string,
 ) (
+	app App,
 	ghID int64,
-	label string,
-	versionCode int,
-	versionName string,
 	iconID int,
 	path string,
 	err error,
 ) {
+	app.AppID = appID
 	err = s.db.QueryRow(
 		`SELECT gh_id, label, version_code, version_name, icon_id, path
 		FROM submitted_apps
 		WHERE id = ?`,
 		appID,
-	).Scan(&ghID, &label, &versionCode, &versionName, &iconID, &path)
+	).Scan(&ghID, &app.Label, &app.VersionCode, &app.VersionName, &iconID, &path)
 
 	return
 }
@@ -439,14 +434,7 @@ func (s *SQLite) ApproveApp(appID string) error {
 	return err
 }
 
-func (s *SQLite) PublishApp(
-	appID string,
-	label string,
-	versionCode int,
-	versionName string,
-	iconID int,
-	ghID int64,
-) error {
+func (s *SQLite) PublishApp(app App, iconID int, ghID int64) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -454,10 +442,10 @@ func (s *SQLite) PublishApp(
 	if _, err := tx.Exec(
 		`INSERT INTO published_apps (id, label, version_code, version_name, icon_id)
 		VALUES (?, ?, ?, ?, ?)`,
-		appID,
-		label,
-		versionCode,
-		versionName,
+		app.AppID,
+		app.Label,
+		app.VersionCode,
+		app.VersionName,
 		iconID,
 	); err != nil {
 		_ = tx.Rollback()
@@ -465,13 +453,13 @@ func (s *SQLite) PublishApp(
 	}
 	if _, err := tx.Exec(
 		"INSERT INTO user_permissions (app_id, user_gh_id, can_update) VALUES (?, ?, TRUE)",
-		appID,
+		app.AppID,
 		ghID,
 	); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
-	if _, err := tx.Exec("DELETE FROM submitted_apps WHERE id = ?", appID); err != nil {
+	if _, err := tx.Exec("DELETE FROM submitted_apps WHERE id = ?", app.AppID); err != nil {
 		_ = tx.Rollback()
 		return err
 	}
@@ -550,21 +538,13 @@ func (s *SQLite) DeleteSubmittedApp(appID string) error {
 	return err
 }
 
-func (s *SQLite) CreateUpdate(
-	appID string,
-	ghID int64,
-	label string,
-	versionCode int32,
-	versionName string,
-	path string,
-	issues []string,
-) error {
+func (s *SQLite) CreateUpdate(app AppWithIssues, ghID int64, path string) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
 	var issueGroupID *int64
-	if len(issues) > 0 {
+	if len(app.Issues) > 0 {
 		res, err := tx.Exec("INSERT INTO issue_groups DEFAULT VALUES")
 		if err != nil {
 			_ = tx.Rollback()
@@ -579,7 +559,7 @@ func (s *SQLite) CreateUpdate(
 		insertQuery := "INSERT INTO issues (id, issue_group_id) VALUES "
 		var inserts []string
 		var params []interface{}
-		for _, issue := range issues {
+		for _, issue := range app.Issues {
 			inserts = append(inserts, "(?, ?)")
 			params = append(params, issue, issueGroupID)
 		}
@@ -594,11 +574,11 @@ func (s *SQLite) CreateUpdate(
 			app_id, user_gh_id, label, version_code, version_name, path, issue_group_id
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		appID,
+		app.AppID,
 		ghID,
-		label,
-		versionCode,
-		versionName,
+		app.Label,
+		app.VersionCode,
+		app.VersionName,
 		path,
 		issueGroupID,
 	); err != nil {
@@ -638,7 +618,7 @@ func (s *SQLite) GetUpdates(reviewerGhID int64) ([]AppWithIssues, error) {
 	var apps []AppWithIssues
 	for dbApps.Next() {
 		var appID, label, versionName string
-		var versionCode int
+		var versionCode int32
 		var issueGroupID *int
 		if err := dbApps.Scan(
 			&appID,
@@ -718,14 +698,7 @@ func (s *SQLite) ApproveUpdate(appID string, versionCode int, versionName string
 	return tx.Commit()
 }
 
-func (s *SQLite) SubmitUpdate(
-	appID string,
-	label string,
-	versionCode int,
-	versionName string,
-	path string,
-	issueGroupID *int,
-) error {
+func (s *SQLite) SubmitUpdate(app App, path string, issueGroupID *int) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -750,10 +723,10 @@ func (s *SQLite) SubmitUpdate(
 				?,
 				?
 			)`,
-			appID,
-			label,
-			versionCode,
-			versionName,
+			app.AppID,
+			app.Label,
+			app.VersionCode,
+			app.VersionName,
 			path,
 			issueGroupID,
 		); err != nil {
@@ -766,9 +739,9 @@ func (s *SQLite) SubmitUpdate(
 			`UPDATE published_apps
 			SET version_code = ?, version_name = ?
 			WHERE id = ?`,
-			versionCode,
-			versionName,
-			appID,
+			app.VersionCode,
+			app.VersionName,
+			app.AppID,
 		); err != nil {
 			_ = tx.Rollback()
 			return err
@@ -776,8 +749,8 @@ func (s *SQLite) SubmitUpdate(
 	}
 	if _, err := tx.Exec(
 		"DELETE FROM staging_updates WHERE app_id = ? AND version_code = ?",
-		appID,
-		versionCode,
+		app.AppID,
+		app.VersionCode,
 	); err != nil {
 		_ = tx.Rollback()
 		return err
