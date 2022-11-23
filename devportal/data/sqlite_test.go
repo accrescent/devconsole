@@ -107,3 +107,38 @@ func TestSQLiteSession(t *testing.T) {
 		}
 	})
 }
+
+func TestSQLiteUser(t *testing.T) {
+	s := testCreateSQLite(t)
+	defer s.Close()
+
+	var testGHID int64 = 654321
+	testEmail := "example@example.com"
+
+	t.Run("default roles", func(t *testing.T) {
+		registered, reviewer, err := s.GetUserRoles(testGHID)
+		if err != nil {
+			t.Fatal("failed to get user:", err)
+		}
+		if registered {
+			t.Error("user is considered registered but has not been created")
+		}
+		if reviewer {
+			t.Error("user is considered a reviewer but has not been created")
+		}
+	})
+
+	if err := s.CreateUser(testGHID, testEmail); err != nil {
+		t.Fatal("failed to create user:", err)
+	}
+
+	t.Run("registered after creation", func(t *testing.T) {
+		registered, _, err := s.GetUserRoles(testGHID)
+		if err != nil {
+			t.Fatal("failed to get user:", err)
+		}
+		if !registered {
+			t.Error("user is created but not considered registered")
+		}
+	})
+}
