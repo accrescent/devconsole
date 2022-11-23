@@ -2,7 +2,7 @@ package data
 
 import "testing"
 
-func TestSQLite_Open(t *testing.T) {
+func TestSQLiteOpen(t *testing.T) {
 	s := new(SQLite)
 	if err := s.Open(":memory:"); err != nil {
 		t.Fatal("failed to open database:", err)
@@ -21,7 +21,7 @@ func TestSQLite_Open(t *testing.T) {
 	})
 }
 
-func TestSQLite_Close(t *testing.T) {
+func TestSQLiteClose(t *testing.T) {
 	s := new(SQLite)
 	if err := s.Open(":memory:"); err != nil {
 		t.Fatal("failed to open database:", err)
