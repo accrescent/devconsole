@@ -28,7 +28,7 @@ type DB interface {
 	GetAppInfo(appID string) (versionCode int, err error)
 	GetApprovedApps() ([]App, error)
 	GetApps(ghID int64) ([]App, error)
-	GetPendingApps(reviewerGhID int64) ([]App, error)
+	GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error)
 	GetSubmittedAppInfo(
 		appID string,
 	) (
@@ -65,7 +65,7 @@ type DB interface {
 		appID string,
 		versionCode int,
 	) (firstVersion int, versionName string, path string, err error)
-	GetUpdates(reviewerGhID int64) ([]App, error)
+	GetUpdates(reviewerGhID int64) ([]AppWithIssues, error)
 	GetStagingUpdateInfo(
 		appID string,
 		versionCode int,
