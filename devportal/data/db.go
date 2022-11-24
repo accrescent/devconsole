@@ -21,7 +21,7 @@ type DB interface {
 		iconPath string,
 		iconHash string,
 	) error
-	GetAppInfo(appID string) (versionCode int, err error)
+	GetAppInfo(appID string) (versionCode int32, err error)
 	GetApprovedApps() ([]App, error)
 	GetApps(ghID int64) ([]App, error)
 	GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error)

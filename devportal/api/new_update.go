@@ -60,7 +60,7 @@ func NewUpdate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": msg})
 		return
 	}
-	if int(m.VersionCode) <= versionCode {
+	if m.VersionCode <= versionCode {
 		err := fmt.Sprintf(
 			"Version %d is not more than current version %d",
 			m.VersionCode, versionCode,

@@ -295,7 +295,7 @@ func (s *SQLite) CreateApp(
 	return tx.Commit()
 }
 
-func (s *SQLite) GetAppInfo(appID string) (versionCode int, err error) {
+func (s *SQLite) GetAppInfo(appID string) (versionCode int32, err error) {
 	err = s.db.QueryRow(
 		"SELECT version_code FROM published_apps WHERE id = ?",
 		appID,
