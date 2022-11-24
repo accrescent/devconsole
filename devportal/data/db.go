@@ -14,6 +14,8 @@ type DB interface {
 	GetUserPermissions(appID string, ghID int64) (update bool, err error)
 	GetUserRoles(ghID int64) (registered bool, reviewer bool, err error)
 
+	CreateReviewer(ghID int64, email string) error
+
 	CreateApp(
 		app AppWithIssues,
 		ghID int64,

@@ -220,6 +220,12 @@ func (s *SQLite) GetUserRoles(ghID int64) (registered bool, reviewer bool, err e
 	return
 }
 
+func (s *SQLite) CreateReviewer(ghID int64, email string) error {
+	_, err := s.db.Exec("INSERT INTO reviewers (user_gh_id, email) VALUES (?, ?)", ghID, email)
+
+	return err
+}
+
 func (s *SQLite) CreateApp(
 	app AppWithIssues,
 	ghID int64,
