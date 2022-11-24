@@ -27,7 +27,7 @@ type DB interface {
 	GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error)
 	GetSubmittedAppInfo(appID string) (app App, ghID int64, iconID int, path string, err error)
 	ApproveApp(appID string) error
-	PublishApp(app App, iconID int, ghID int64) error
+	PublishApp(appID string) error
 	SubmitApp(appID string, label string, ghID int64) error
 	DeleteSubmittedApp(appID string) error
 

@@ -15,7 +15,7 @@ func PublishApp(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
 	appID := c.Param("id")
 
-	app, ghID, iconID, path, err := db.GetSubmittedAppInfo(appID)
+	app, _, _, path, err := db.GetSubmittedAppInfo(appID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -27,7 +27,7 @@ func PublishApp(c *gin.Context) {
 		return
 	}
 
-	if err := db.PublishApp(app, iconID, ghID); err != nil {
+	if err := db.PublishApp(appID); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintPrimaryKey) {
 			_ = c.AbortWithError(http.StatusConflict, err)
 		} else {

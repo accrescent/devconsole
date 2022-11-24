@@ -434,7 +434,12 @@ func (s *SQLite) ApproveApp(appID string) error {
 	return err
 }
 
-func (s *SQLite) PublishApp(app App, iconID int, ghID int64) error {
+func (s *SQLite) PublishApp(appID string) error {
+	app, ghID, iconID, _, err := s.GetSubmittedAppInfo(appID)
+	if err != nil {
+		return err
+	}
+
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
