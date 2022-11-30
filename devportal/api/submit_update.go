@@ -39,8 +39,13 @@ func SubmitUpdate(c *gin.Context) {
 
 	if issueGroupID == nil {
 		// No review necessary, so publish the update immediately.
-		if err := publish(c, appID, int32(versionCode), versionName,
-			quality.Update, fileHandle,
+		if err := publish(
+			c,
+			appID,
+			int32(versionCode),
+			versionName,
+			quality.Update,
+			fileHandle,
 		); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
