@@ -1,6 +1,7 @@
 *
 
 !/api
+!/app.go
 !/auth
 !/config
 !/data
