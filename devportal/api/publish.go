@@ -4,18 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/accrescent/devportal/config"
+	"github.com/accrescent/devportal/data"
 	"github.com/accrescent/devportal/quality"
 )
 
 func publish(
 	c *gin.Context, appID string, versionCode int32, versionName string,
-	uploadType quality.UploadType, apkSetPath string,
+	uploadType quality.UploadType, appFileHandle string,
 ) error {
+	storage := c.MustGet("storage").(data.FileStorage)
 	conf := c.MustGet("config").(config.Config)
 
 	var method string
@@ -25,12 +26,7 @@ func publish(
 		method = http.MethodPut
 	}
 
-	apkSet, err := os.Open(apkSetPath)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return err
-	}
-	apkSetInfo, err := apkSet.Stat()
+	file, size, err := storage.GetAPKSet(appFileHandle)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return err
@@ -38,14 +34,14 @@ func publish(
 
 	req, err := http.NewRequest(
 		method, fmt.Sprintf("%s/apps/%s/%d/%s", conf.RepoURL, appID, versionCode, versionName),
-		apkSet,
+		file,
 	)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return err
 	}
 	req.Header.Add("Authorization", "token "+conf.APIKey)
-	req.ContentLength = apkSetInfo.Size()
+	req.ContentLength = size
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)

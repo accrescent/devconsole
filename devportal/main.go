@@ -58,6 +58,7 @@ func main() {
 	}
 
 	r.Use(middleware.DB(db))
+	r.Use(middleware.FileStorage(data.NewLocalStorage("/")))
 	r.Use(middleware.OAuth2Config(oauth2Conf))
 	r.Use(middleware.Config(conf))
 

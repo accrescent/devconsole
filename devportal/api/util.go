@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"mime/multipart"
-	"os"
 
 	"github.com/accrescent/apkstat"
 )
@@ -38,16 +37,4 @@ func openAPKSet(formFile *multipart.FileHeader) (*apk.APK, multipart.File, error
 	}
 
 	return apk, file, nil
-}
-
-func saveFile(src multipart.File, dst string) error {
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, src)
-
-	return err
 }

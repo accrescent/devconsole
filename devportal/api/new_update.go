@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 
@@ -16,6 +14,7 @@ import (
 
 func NewUpdate(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
+	storage := c.MustGet("storage").(data.FileStorage)
 	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("id")
 
@@ -74,13 +73,8 @@ func NewUpdate(c *gin.Context) {
 	}
 
 	// App passed all automated checks, so save it to disk
-	dir, err := os.MkdirTemp("/", "")
+	apkSetHandle, err := storage.SaveUpdate(appFile)
 	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	filename := filepath.Join(dir, "app.apks")
-	if err := saveFile(appFile, filename); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -99,7 +93,7 @@ func NewUpdate(c *gin.Context) {
 			Issues: issues,
 		},
 		ghID,
-		filename,
+		apkSetHandle,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return

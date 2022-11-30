@@ -63,7 +63,7 @@ func (s *SQLite) Initialize() error {
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
-		path TEXT NOT NULL,
+		file_handle TEXT NOT NULL,
 		icon_id INT NOT NULL REFERENCES icons(id),
 		issue_group_id INT REFERENCES issue_groups(id),
 		PRIMARY KEY (id, user_gh_id)
@@ -72,7 +72,7 @@ func (s *SQLite) Initialize() error {
 	}
 	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS icons (
 		id INTEGER PRIMARY KEY,
-		path TEXT NOT NULL,
+		file_handle TEXT NOT NULL,
 		hash TEXT NOT NULL
 	) STRICT`); err != nil {
 		return err
@@ -99,7 +99,7 @@ func (s *SQLite) Initialize() error {
 		issue_group_id INT REFERENCES issue_groups(id),
 		reviewer_gh_id INT NOT NULL REFERENCES reviewers(user_gh_id),
 		approved INT NOT NULL CHECK(approved in (FALSE, TRUE)) DEFAULT FALSE,
-		path TEXT NOT NULL
+		file_handle TEXT NOT NULL
 	) STRICT`); err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (s *SQLite) Initialize() error {
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
-		path TEXT NOT NULL,
+		file_handle TEXT NOT NULL,
 		issue_group_id INT REFERENCES issue_groups(id),
 		PRIMARY KEY (app_id, version_code)
 	) STRICT`); err != nil {
@@ -138,7 +138,7 @@ func (s *SQLite) Initialize() error {
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
 		reviewer_gh_id INT NOT NULL REFERENCES reviewers(user_gh_id),
-		path TEXT NOT NULL,
+		file_handle TEXT NOT NULL,
 		issue_group_id INT NOT NULL REFERENCES issue_groups(id),
 		PRIMARY KEY (app_id, version_code)
 	) STRICT`); err != nil {
@@ -229,8 +229,8 @@ func (s *SQLite) CreateReviewer(ghID int64, email string) error {
 func (s *SQLite) CreateApp(
 	app AppWithIssues,
 	ghID int64,
-	appPath string,
-	iconPath string,
+	appFileHandle string,
+	iconFileHandle string,
 	iconHash string,
 ) error {
 	tx, err := s.db.Begin()
@@ -263,7 +263,11 @@ func (s *SQLite) CreateApp(
 			return err
 		}
 	}
-	res, err := tx.Exec("INSERT INTO icons (path, hash) VALUES (?, ?)", iconPath, iconHash)
+	res, err := tx.Exec(
+		"INSERT INTO icons (file_handle, hash) VALUES (?, ?)",
+		iconFileHandle,
+		iconHash,
+	)
 	if err != nil {
 		_ = tx.Rollback()
 		return err
@@ -280,7 +284,7 @@ func (s *SQLite) CreateApp(
 			label,
 			version_code,
 			version_name,
-			path,
+			file_handle,
 			icon_id,
 			issue_group_id
 		)
@@ -290,7 +294,7 @@ func (s *SQLite) CreateApp(
 		app.Label,
 		app.VersionCode,
 		app.VersionName,
-		appPath,
+		appFileHandle,
 		iconID,
 		issueGroupID,
 	); err != nil {
@@ -420,16 +424,16 @@ func (s *SQLite) GetSubmittedAppInfo(
 	app App,
 	ghID int64,
 	iconID int,
-	path string,
+	fileHandle string,
 	err error,
 ) {
 	app.AppID = appID
 	err = s.db.QueryRow(
-		`SELECT gh_id, label, version_code, version_name, icon_id, path
+		`SELECT gh_id, label, version_code, version_name, icon_id, file_handle
 		FROM submitted_apps
 		WHERE id = ?`,
 		appID,
-	).Scan(&ghID, &app.Label, &app.VersionCode, &app.VersionName, &iconID, &path)
+	).Scan(&ghID, &app.Label, &app.VersionCode, &app.VersionName, &iconID, &fileHandle)
 
 	return
 }
@@ -479,16 +483,16 @@ func (s *SQLite) PublishApp(appID string) error {
 }
 
 func (s *SQLite) SubmitApp(appID string, label string, ghID int64) error {
-	var path, versionName string
+	var fileHandle, versionName string
 	var versionCode, iconID int
 	var issueGroupID *int
 	if err := s.db.QueryRow(
-		`SELECT version_code, version_name, path, icon_id, issue_group_id
+		`SELECT version_code, version_name, file_handle, icon_id, issue_group_id
 		FROM staging_apps
 		WHERE id = ? AND user_gh_id = ?`,
 		appID,
 		ghID,
-	).Scan(&versionCode, &versionName, &path, &iconID, &issueGroupID); err != nil {
+	).Scan(&versionCode, &versionName, &fileHandle, &iconID, &issueGroupID); err != nil {
 		return err
 	}
 
@@ -505,7 +509,7 @@ func (s *SQLite) SubmitApp(appID string, label string, ghID int64) error {
 			version_name,
 			icon_id,
 			reviewer_gh_id,
-			path,
+			file_handle,
 			issue_group_id
 		)
 		VALUES (
@@ -525,7 +529,7 @@ func (s *SQLite) SubmitApp(appID string, label string, ghID int64) error {
 		versionCode,
 		versionName,
 		iconID,
-		path,
+		fileHandle,
 		issueGroupID,
 	); err != nil {
 		_ = tx.Rollback()
@@ -549,7 +553,7 @@ func (s *SQLite) DeleteSubmittedApp(appID string) error {
 	return err
 }
 
-func (s *SQLite) CreateUpdate(app AppWithIssues, ghID int64, path string) error {
+func (s *SQLite) CreateUpdate(app AppWithIssues, ghID int64, fileHandle string) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -582,7 +586,13 @@ func (s *SQLite) CreateUpdate(app AppWithIssues, ghID int64, path string) error 
 	}
 	if _, err := tx.Exec(
 		`REPLACE INTO staging_updates (
-			app_id, user_gh_id, label, version_code, version_name, path, issue_group_id
+			app_id,
+			user_gh_id,
+			label,
+			version_code,
+			version_name,
+			file_handle,
+			issue_group_id
 		)
 		VALUES (?, ?, ?, ?, ?, ?, ?)`,
 		app.AppID,
@@ -590,7 +600,7 @@ func (s *SQLite) CreateUpdate(app AppWithIssues, ghID int64, path string) error 
 		app.Label,
 		app.VersionCode,
 		app.VersionName,
-		path,
+		fileHandle,
 		issueGroupID,
 	); err != nil {
 		_ = tx.Rollback()
@@ -603,14 +613,14 @@ func (s *SQLite) CreateUpdate(app AppWithIssues, ghID int64, path string) error 
 func (s *SQLite) GetUpdateInfo(
 	appID string,
 	versionCode int,
-) (firstVersion int, versionName string, path string, err error) {
+) (firstVersion int, versionName string, fileHandle string, err error) {
 	err = s.db.QueryRow(
-		`SELECT (SELECT MIN(version_code) FROM submitted_updates), version_name, path
+		`SELECT (SELECT MIN(version_code) FROM submitted_updates), version_name, file_handle
 		FROM submitted_updates
 		WHERE app_id = ? AND version_code = ?`,
 		appID,
 		versionCode,
-	).Scan(&firstVersion, &versionName, &path)
+	).Scan(&firstVersion, &versionName, &fileHandle)
 
 	return
 }
@@ -670,15 +680,15 @@ func (s *SQLite) GetStagingUpdateInfo(
 	appID string,
 	versionCode int,
 	ghID int64,
-) (label string, versionName string, path string, issueGroupID *int, err error) {
+) (label string, versionName string, fileHandle string, issueGroupID *int, err error) {
 	err = s.db.QueryRow(
-		`SELECT label, version_name, path, issue_group_id
+		`SELECT label, version_name, file_handle, issue_group_id
 		FROM staging_updates
 		WHERE app_id = ? AND version_code = ? AND user_gh_id = ?`,
 		appID,
 		versionCode,
 		ghID,
-	).Scan(&label, &versionName, &path, &issueGroupID)
+	).Scan(&label, &versionName, &fileHandle, &issueGroupID)
 
 	return
 }
@@ -709,7 +719,7 @@ func (s *SQLite) ApproveUpdate(appID string, versionCode int, versionName string
 	return tx.Commit()
 }
 
-func (s *SQLite) SubmitUpdate(app App, path string, issueGroupID *int) error {
+func (s *SQLite) SubmitUpdate(app App, fileHandle string, issueGroupID *int) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -722,7 +732,7 @@ func (s *SQLite) SubmitUpdate(app App, path string, issueGroupID *int) error {
 				version_code,
 				version_name,
 				reviewer_gh_id,
-				path,
+				file_handle,
 				issue_group_id
 			)
 			VALUES (
@@ -738,7 +748,7 @@ func (s *SQLite) SubmitUpdate(app App, path string, issueGroupID *int) error {
 			app.Label,
 			app.VersionCode,
 			app.VersionName,
-			path,
+			fileHandle,
 			issueGroupID,
 		); err != nil {
 			_ = tx.Rollback()

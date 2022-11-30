@@ -23,7 +23,7 @@ func SubmitUpdate(c *gin.Context) {
 		return
 	}
 
-	label, versionName, path, issueGroupID, err := db.GetStagingUpdateInfo(
+	label, versionName, fileHandle, issueGroupID, err := db.GetStagingUpdateInfo(
 		appID,
 		versionCode,
 		ghID,
@@ -40,7 +40,7 @@ func SubmitUpdate(c *gin.Context) {
 	if issueGroupID == nil {
 		// No review necessary, so publish the update immediately.
 		if err := publish(c, appID, int32(versionCode), versionName,
-			quality.Update, path,
+			quality.Update, fileHandle,
 		); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
@@ -53,7 +53,7 @@ func SubmitUpdate(c *gin.Context) {
 		VersionCode: int32(versionCode),
 		VersionName: versionName,
 	}
-	err = db.SubmitUpdate(app, path, issueGroupID)
+	err = db.SubmitUpdate(app, fileHandle, issueGroupID)
 	if err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintUnique) {
 			_ = c.AbortWithError(http.StatusConflict, err)

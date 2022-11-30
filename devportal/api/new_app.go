@@ -8,8 +8,6 @@ import (
 	_ "image/png"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 
@@ -19,6 +17,7 @@ import (
 
 func NewApp(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
+	storage := c.MustGet("storage").(data.FileStorage)
 	ghID := c.MustGet("gh_id").(int64)
 
 	formApp, err := c.FormFile("app")
@@ -66,24 +65,8 @@ func NewApp(c *gin.Context) {
 	}
 
 	// App passed all automated checks, so save it to disk
-	dir, err := os.MkdirTemp("/", "")
+	apkSetHandle, iconHandle, err := storage.SaveNewApp(appFile, formIconFile)
 	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	appPath := filepath.Join(dir, "app.apks")
-	if err := saveFile(appFile, appPath); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	iconPath := filepath.Join(dir, "icon.png")
-	outIconFile, err := os.Create(iconPath)
-	if err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	defer outIconFile.Close()
-	if _, err := io.Copy(outIconFile, formIconFile); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -94,7 +77,7 @@ func NewApp(c *gin.Context) {
 	m := apk.Manifest()
 
 	hasher := sha256.New()
-	if _, err := io.Copy(hasher, outIconFile); err != nil {
+	if _, err := io.Copy(hasher, formIconFile); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -111,8 +94,8 @@ func NewApp(c *gin.Context) {
 			Issues: issues,
 		},
 		ghID,
-		appPath,
-		iconPath,
+		apkSetHandle,
+		iconHandle,
 		iconHash,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)

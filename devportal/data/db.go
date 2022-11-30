@@ -19,32 +19,32 @@ type DB interface {
 	CreateApp(
 		app AppWithIssues,
 		ghID int64,
-		appPath string,
-		iconPath string,
+		appFileHandle string,
+		iconFileHandle string,
 		iconHash string,
 	) error
 	GetAppInfo(appID string) (versionCode int32, err error)
 	GetApprovedApps() ([]App, error)
 	GetApps(ghID int64) ([]App, error)
 	GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error)
-	GetSubmittedAppInfo(appID string) (app App, ghID int64, iconID int, path string, err error)
+	GetSubmittedAppInfo(appID string) (app App, ghID int64, iconID int, fileHandle string, err error)
 	ApproveApp(appID string) error
 	PublishApp(appID string) error
 	SubmitApp(appID string, label string, ghID int64) error
 	DeleteSubmittedApp(appID string) error
 
-	CreateUpdate(app AppWithIssues, ghID int64, path string) error
+	CreateUpdate(app AppWithIssues, ghID int64, fileHandle string) error
 	GetUpdateInfo(
 		appID string,
 		versionCode int,
-	) (firstVersion int, versionName string, path string, err error)
+	) (firstVersion int, versionName string, fileHandle string, err error)
 	GetUpdates(reviewerGhID int64) ([]AppWithIssues, error)
 	GetStagingUpdateInfo(
 		appID string,
 		versionCode int,
 		ghID int64,
-	) (label string, versionName string, path string, issueGroupID *int, err error)
+	) (label string, versionName string, fileHandle string, issueGroupID *int, err error)
 	ApproveUpdate(appID string, versionCode int, versionName string) error
-	SubmitUpdate(app App, path string, issueGroupID *int) error
+	SubmitUpdate(app App, fileHandle string, issueGroupID *int) error
 	DeleteSubmittedUpdate(appID string, versionCode int) error
 }

@@ -21,7 +21,7 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
-	firstUpdateVersion, versionName, path, err := db.GetUpdateInfo(appID, versionCode)
+	firstUpdateVersion, versionName, fileHandle, err := db.GetUpdateInfo(appID, versionCode)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
@@ -36,7 +36,14 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
-	if err := publish(c, appID, int32(versionCode), versionName, quality.Update, path); err != nil {
+	if err := publish(
+		c,
+		appID,
+		int32(versionCode),
+		versionName,
+		quality.Update,
+		fileHandle,
+	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

@@ -15,14 +15,14 @@ func PublishApp(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
 	appID := c.Param("id")
 
-	app, _, _, path, err := db.GetSubmittedAppInfo(appID)
+	app, _, _, handle, err := db.GetSubmittedAppInfo(appID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	// Publish to repository server
-	if err := publish(c, appID, app.VersionCode, app.VersionName, quality.NewApp, path); err != nil {
+	if err := publish(c, appID, app.VersionCode, app.VersionName, quality.NewApp, handle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
