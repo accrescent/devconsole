@@ -321,7 +321,7 @@ func (s *SQLite) GetApprovedApps() ([]App, error) {
 		WHERE approved = TRUE`,
 	)
 	if err != nil {
-		return []App{}, err
+		return nil, err
 	}
 	defer rows.Close()
 	var apps []App
@@ -329,7 +329,7 @@ func (s *SQLite) GetApprovedApps() ([]App, error) {
 		var appID, label, versionName string
 		var versionCode int32
 		if err := rows.Scan(&appID, &label, &versionCode, &versionName); err != nil {
-			return []App{}, err
+			return nil, err
 		}
 
 		app := App{appID, label, versionCode, versionName}
@@ -349,7 +349,7 @@ func (s *SQLite) GetApps(ghID int64) ([]App, error) {
 		ghID,
 	)
 	if err != nil {
-		return []App{}, err
+		return nil, err
 	}
 	defer rows.Close()
 	var apps []App
@@ -357,7 +357,7 @@ func (s *SQLite) GetApps(ghID int64) ([]App, error) {
 		var appID, label, versionName string
 		var versionCode int32
 		if err := rows.Scan(&appID, &label, &versionCode, &versionName); err != nil {
-			return []App{}, err
+			return nil, err
 		}
 
 		app := App{appID, label, versionCode, versionName}
@@ -375,7 +375,7 @@ func (s *SQLite) GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error) {
 		reviewerGhID,
 	)
 	if err != nil {
-		return []AppWithIssues{}, err
+		return nil, err
 	}
 	defer dbApps.Close()
 	var apps []AppWithIssues
@@ -390,7 +390,7 @@ func (s *SQLite) GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error) {
 			&versionName,
 			&issueGroupID,
 		); err != nil {
-			return []AppWithIssues{}, err
+			return nil, err
 		}
 
 		dbIssues, err := s.db.Query(
@@ -398,14 +398,14 @@ func (s *SQLite) GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error) {
 			issueGroupID,
 		)
 		if err != nil {
-			return []AppWithIssues{}, err
+			return nil, err
 		}
 		defer dbIssues.Close()
 		var issues []string
 		for dbIssues.Next() {
 			var issue string
 			if err := dbIssues.Scan(&issue); err != nil {
-				return []AppWithIssues{}, err
+				return nil, err
 			}
 
 			issues = append(issues, issue)
@@ -633,7 +633,7 @@ func (s *SQLite) GetUpdates(reviewerGhID int64) ([]AppWithIssues, error) {
 		reviewerGhID,
 	)
 	if err != nil {
-		return []AppWithIssues{}, err
+		return nil, err
 	}
 	defer dbApps.Close()
 	var apps []AppWithIssues
@@ -648,7 +648,7 @@ func (s *SQLite) GetUpdates(reviewerGhID int64) ([]AppWithIssues, error) {
 			&versionName,
 			&issueGroupID,
 		); err != nil {
-			return []AppWithIssues{}, err
+			return nil, err
 		}
 
 		dbIssues, err := s.db.Query(
@@ -656,14 +656,14 @@ func (s *SQLite) GetUpdates(reviewerGhID int64) ([]AppWithIssues, error) {
 			issueGroupID,
 		)
 		if err != nil {
-			return []AppWithIssues{}, err
+			return nil, err
 		}
 		defer dbIssues.Close()
 		var issues []string
 		for dbIssues.Next() {
 			var issue string
 			if err := dbIssues.Scan(&issue); err != nil {
-				return []AppWithIssues{}, err
+				return nil, err
 			}
 
 			issues = append(issues, issue)

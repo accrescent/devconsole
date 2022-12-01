@@ -40,9 +40,9 @@ func publish(c *gin.Context, uploadType uploadType) {
 	repoData := repoData{
 		Version:       version,
 		VersionCode:   versionCodeInt,
-		ABISplits:     []string{},
-		DensitySplits: []string{},
-		LangSplits:    []string{},
+		ABISplits:     nil,
+		DensitySplits: nil,
+		LangSplits:    nil,
 	}
 
 	// Extract APKs from APK set
