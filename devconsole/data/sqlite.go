@@ -682,6 +682,72 @@ func (s *SQLite) CreateUpdate(app AppWithIssues, ghID int64, fileHandle string) 
 	return tx.Commit()
 }
 
+func (s *SQLite) GetSubmittedUpdates(ghID int64) ([]AppWithIssues, error) {
+	dbApps, err := s.db.Query(
+		`SELECT
+			submitted_updates.app_id,
+			submitted_updates.label,
+			submitted_updates.version_code,
+			submitted_updates.version_name,
+			submitted_updates.issue_group_id
+		FROM submitted_updates
+		JOIN published_apps ON published_apps.id = submitted_updates.app_id
+		JOIN user_permissions ON user_permissions.app_id = published_apps.id
+		WHERE user_permissions.user_gh_id = ?`,
+		ghID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer dbApps.Close()
+	var apps []AppWithIssues
+	for dbApps.Next() {
+		var appID, label, versionName string
+		var versionCode int32
+		var issueGroupID *int
+		if err := dbApps.Scan(
+			&appID,
+			&label,
+			&versionCode,
+			&versionName,
+			&issueGroupID,
+		); err != nil {
+			return nil, err
+		}
+
+		dbIssues, err := s.db.Query(
+			`SELECT issues.id FROM issues WHERE issues.issue_group_id = ?
+			AND issues.id NOT IN (
+				SELECT issues.id
+				FROM published_apps
+				JOIN issues
+				ON issues.issue_group_id = published_apps.issue_group_id
+				AND published_apps.id = ?
+			)`,
+			issueGroupID,
+			appID,
+		)
+		if err != nil {
+			return nil, err
+		}
+		defer dbIssues.Close()
+		var issues []string
+		for dbIssues.Next() {
+			var issue string
+			if err := dbIssues.Scan(&issue); err != nil {
+				return nil, err
+			}
+
+			issues = append(issues, issue)
+		}
+
+		app := AppWithIssues{App{appID, label, versionCode, versionName}, issues}
+		apps = append(apps, app)
+	}
+
+	return apps, nil
+}
+
 func (s *SQLite) GetUpdateInfo(
 	appID string,
 	versionCode int,

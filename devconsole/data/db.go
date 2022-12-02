@@ -44,6 +44,7 @@ type DB interface {
 	DeleteSubmittedApp(appID string) error
 
 	CreateUpdate(app AppWithIssues, ghID int64, fileHandle string) error
+	GetSubmittedUpdates(ghID int64) ([]AppWithIssues, error)
 	GetUpdateInfo(
 		appID string,
 		versionCode int,

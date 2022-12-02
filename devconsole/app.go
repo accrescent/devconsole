@@ -57,6 +57,7 @@ func NewApp(
 	auth.GET("/api/apps", api.GetApps)
 	auth.POST("/api/apps", api.NewApp)
 	auth.GET("/api/submitted-apps", api.GetSubmittedApps)
+	auth.GET("/api/submitted-updates", api.GetSubmittedUpdates)
 	auth.PATCH("/api/apps/:id", api.SubmitApp)
 	update.POST("/api/apps/:id/updates", api.NewUpdate)
 	update.PATCH("/api/apps/:id/:version", api.SubmitUpdate)

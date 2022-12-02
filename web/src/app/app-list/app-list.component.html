@@ -32,3 +32,22 @@
         </ul>
     </mat-card-content>
 </mat-card>
+
+<mat-card *ngFor="let update of submittedUpdates">
+    <mat-card-header>
+        <mat-card-title>{{ update.label }}</mat-card-title>
+        <mat-card-subtitle>{{ update.app_id}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <br>
+        <h4>Review issues</h4>
+        <ul>
+            <li *ngFor="let issue of update.issues"><code>{{ issue }}</code></li>
+        </ul>
+        <h4>Submitted update info</h4>
+        <ul>
+            <li>Version code: {{ update.version_code }}</li>
+            <li>Version name: {{ update.version_name }}</li>
+        </ul>
+    </mat-card-content>
+</mat-card>
