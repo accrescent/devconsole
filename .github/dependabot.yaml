@@ -6,7 +6,7 @@ updates:
       interval: daily
       time: "16:00"
   - package-ecosystem: gomod
-    directory: "/devportal"
+    directory: "/devconsole"
     schedule:
       interval: daily
       time: "16:00"

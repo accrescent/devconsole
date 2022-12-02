@@ -1,8 +1,8 @@
 version: '3'
 services:
-  portal:
-    build: devportal
-    env_file: devportal/.env
+  console:
+    build: devconsole
+    env_file: devconsole/.env
   web:
     build: web
   repo:

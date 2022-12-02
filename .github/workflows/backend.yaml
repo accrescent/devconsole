@@ -11,8 +11,8 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - name: Build devportal
-        run: cd devportal && go build -v
+      - name: Build devconsole
+        run: cd devconsole && go build -v
       - name: Build reposerver
         run: cd reposerver && go build -v
   lint:
@@ -23,10 +23,10 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - name: Lint devportal
+      - name: Lint devconsole
         uses: golangci/golangci-lint-action@v3
         with:
-          working-directory: devportal
+          working-directory: devconsole
           args: --timeout 2m
       - name: Lint reposerver
         uses: golangci/golangci-lint-action@v3
@@ -41,5 +41,5 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - name: Test devportal
-        run: cd devportal && go test -v ./...
+      - name: Test devconsole
+        run: cd devconsole && go test -v ./...

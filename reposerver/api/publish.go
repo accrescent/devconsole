@@ -64,13 +64,13 @@ func publish(c *gin.Context, uploadType uploadType) {
 			// you using this status code?" The short answer is simple: I want to. The
 			// long and more technical answer is that no other status code fits much
 			// better. This is technically a client error since the developer pushed an
-			// APK set with invalid/malicious ZIP file names, but the developer portal
+			// APK set with invalid/malicious ZIP file names, but the developer console
 			// accepted that long ago. We still ought to sanitize the file names here as
-			// opposed to strictly in the developer portal because we don't need to give
-			// an attacker with control over the developer portal a vector toward full
-			// control over the repository server. Labeling this as an internal server
-			// error _technically_ might be correct but handling 500's in client JS
-			// feels gross and wrong.
+			// opposed to strictly in the developer console because we don't need to
+			// give an attacker with control over the developer console a vector toward
+			// full control over the repository server. Labeling this as an internal
+			// server error _technically might be correct but handling 500's in client
+			// JS feels gross and wrong.
 			//
 			// So here we are. Do not extract files, do not brew coffee, do not pass go,
 			// do not collect two hundred dollars.
