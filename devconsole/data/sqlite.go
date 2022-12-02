@@ -8,6 +8,10 @@ import (
 	"time"
 
 	"github.com/mattn/go-sqlite3"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/endpoints"
+
+	"github.com/accrescent/devconsole/config"
 )
 
 func init() {
@@ -37,6 +41,12 @@ func (s *SQLite) Open(dsn string) error {
 }
 
 func (s *SQLite) Initialize() error {
+	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS config (
+		key TEXT PRIMARY KEY,
+		value TEXT NOT NULL
+	) STRICT`); err != nil {
+		return err
+	}
 	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS sessions (
 		id TEXT PRIMARY KEY,
 		gh_id INT NOT NULL,
@@ -147,6 +157,32 @@ func (s *SQLite) Initialize() error {
 	}
 
 	return nil
+}
+
+func (s *SQLite) LoadConfig() (*oauth2.Config, *config.Config, error) {
+	oauth := new(oauth2.Config)
+	conf := new(config.Config)
+	if err := s.db.QueryRow(`SELECT
+		(SELECT value FROM config WHERE key = 'gh_client_id'),
+		(SELECT value FROM config WHERE key = 'gh_client_secret'),
+		(SELECT value FROM config WHERE key = 'oauth2_redirect_url'),
+		(SELECT value FROM config WHERE key = 'signer_gh_id'),
+		(SELECT value FROM config WHERE key = 'repo_url'),
+		(SELECT value FROM config WHERE key = 'api_key')
+	`).Scan(
+		&oauth.ClientID,
+		&oauth.ClientSecret,
+		&oauth.RedirectURL,
+		&conf.SignerGitHubID,
+		&conf.RepoURL,
+		&conf.APIKey,
+	); err != nil {
+		return nil, nil, err
+	}
+	oauth.Endpoint = endpoints.GitHub
+	oauth.Scopes = []string{"user:email"}
+
+	return oauth, conf, nil
 }
 
 func (s *SQLite) Close() error {

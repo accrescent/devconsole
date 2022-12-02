@@ -1,8 +1,15 @@
 package data
 
+import (
+	"golang.org/x/oauth2"
+
+	"github.com/accrescent/devconsole/config"
+)
+
 type DB interface {
 	Open(dsn string) error
 	Initialize() error
+	LoadConfig() (*oauth2.Config, *config.Config, error)
 	Close() error
 
 	CreateSession(ghID int64, accessToken string) (id string, err error)
