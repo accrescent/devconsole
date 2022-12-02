@@ -20,7 +20,7 @@ func GetUpdateAPKs(c *gin.Context) {
 		return
 	}
 
-	_, _, handle, err := db.GetUpdateInfo(appID, versionCode)
+	_, _, handle, _, err := db.GetUpdateInfo(appID, versionCode)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return

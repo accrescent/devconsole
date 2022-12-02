@@ -21,7 +21,7 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
-	firstUpdateVersion, versionName, fileHandle, err := db.GetUpdateInfo(appID, versionCode)
+	firstUpdate, versionName, fileHandle, issueGroupID, err := db.GetUpdateInfo(appID, versionCode)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
@@ -31,7 +31,7 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 	// Prohibit approving updates out-of-order
-	if versionCode != firstUpdateVersion {
+	if versionCode != firstUpdate {
 		c.AbortWithStatus(http.StatusConflict)
 		return
 	}
@@ -48,7 +48,7 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
-	if err := db.ApproveUpdate(appID, versionCode, versionName); err != nil {
+	if err := db.ApproveUpdate(appID, versionCode, versionName, issueGroupID); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

@@ -15,7 +15,7 @@ func PublishApp(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
 	appID := c.Param("id")
 
-	app, _, _, handle, err := db.GetSubmittedAppInfo(appID)
+	app, _, _, _, handle, err := db.GetSubmittedAppInfo(appID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return

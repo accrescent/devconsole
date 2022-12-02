@@ -108,7 +108,8 @@ func (s *SQLite) Initialize() error {
 		label TEXT NOT NULL,
 		version_code INT NOT NULL,
 		version_name TEXT NOT NULL,
-		icon_id INT NOT NULL REFERENCES icons(id)
+		icon_id INT NOT NULL REFERENCES icons(id),
+		issue_group_id INT REFERENCES issue_groups(id)
 	) STRICT`); err != nil {
 		return err
 	}
@@ -424,16 +425,17 @@ func (s *SQLite) GetSubmittedAppInfo(
 	app App,
 	ghID int64,
 	iconID int,
+	issueGroupID *int,
 	fileHandle string,
 	err error,
 ) {
 	app.AppID = appID
 	err = s.db.QueryRow(
-		`SELECT gh_id, label, version_code, version_name, icon_id, file_handle
+		`SELECT gh_id, label, version_code, version_name, icon_id, issue_group_id, file_handle
 		FROM submitted_apps
 		WHERE id = ?`,
 		appID,
-	).Scan(&ghID, &app.Label, &app.VersionCode, &app.VersionName, &iconID, &fileHandle)
+	).Scan(&ghID, &app.Label, &app.VersionCode, &app.VersionName, &iconID, &issueGroupID, &fileHandle)
 
 	return
 }
@@ -445,7 +447,7 @@ func (s *SQLite) ApproveApp(appID string) error {
 }
 
 func (s *SQLite) PublishApp(appID string) error {
-	app, ghID, iconID, _, err := s.GetSubmittedAppInfo(appID)
+	app, ghID, iconID, issueGroupID, _, err := s.GetSubmittedAppInfo(appID)
 	if err != nil {
 		return err
 	}
@@ -455,13 +457,21 @@ func (s *SQLite) PublishApp(appID string) error {
 		return err
 	}
 	if _, err := tx.Exec(
-		`INSERT INTO published_apps (id, label, version_code, version_name, icon_id)
-		VALUES (?, ?, ?, ?, ?)`,
+		`INSERT INTO published_apps (
+			id,
+			label,
+			version_code,
+			version_name,
+			icon_id,
+			issue_group_id
+		)
+		VALUES (?, ?, ?, ?, ?, ?)`,
 		app.AppID,
 		app.Label,
 		app.VersionCode,
 		app.VersionName,
 		iconID,
+		issueGroupID,
 	); err != nil {
 		_ = tx.Rollback()
 		return err
@@ -613,14 +623,18 @@ func (s *SQLite) CreateUpdate(app AppWithIssues, ghID int64, fileHandle string) 
 func (s *SQLite) GetUpdateInfo(
 	appID string,
 	versionCode int,
-) (firstVersion int, versionName string, fileHandle string, err error) {
+) (firstVersion int, versionName string, fileHandle string, issueGroupID *int, err error) {
 	err = s.db.QueryRow(
-		`SELECT (SELECT MIN(version_code) FROM submitted_updates), version_name, file_handle
+		`SELECT
+			(SELECT MIN(version_code) FROM submitted_updates),
+			version_name,
+			file_handle,
+			issue_group_id
 		FROM submitted_updates
 		WHERE app_id = ? AND version_code = ?`,
 		appID,
 		versionCode,
-	).Scan(&firstVersion, &versionName, &fileHandle)
+	).Scan(&firstVersion, &versionName, &fileHandle, &issueGroupID)
 
 	return
 }
@@ -652,8 +666,16 @@ func (s *SQLite) GetUpdates(reviewerGhID int64) ([]AppWithIssues, error) {
 		}
 
 		dbIssues, err := s.db.Query(
-			"SELECT id FROM issues WHERE issue_group_id = ?",
+			`SELECT issues.id FROM issues WHERE issues.issue_group_id = ?
+			AND issues.id NOT IN (
+				SELECT issues.id
+				FROM published_apps
+				JOIN issues
+				ON issues.issue_group_id = published_apps.issue_group_id
+				AND published_apps.id = ?
+			)`,
 			issueGroupID,
+			appID,
 		)
 		if err != nil {
 			return nil, err
@@ -680,28 +702,51 @@ func (s *SQLite) GetStagingUpdateInfo(
 	appID string,
 	versionCode int,
 	ghID int64,
-) (label string, versionName string, fileHandle string, issueGroupID *int, err error) {
+) (label string, versionName string, fileHandle string, issueGroupID *int, needsReview bool, err error) {
+	// We determine the update needs review if it has any review issues that the published app
+	// doesn't have, i.e., if the update adds any new review issues.
 	err = s.db.QueryRow(
-		`SELECT label, version_name, file_handle, issue_group_id
+		`SELECT label, version_name, file_handle, issue_group_id, EXISTS(
+			SELECT issues.id
+			FROM staging_updates
+			JOIN issues
+			ON issues.issue_group_id = staging_updates.issue_group_id
+			WHERE issues.id NOT IN (
+				SELECT issues.id
+				FROM published_apps
+				JOIN issues
+				ON issues.issue_group_id = published_apps.issue_group_id
+				AND published_apps.id = ?
+			)
+		)
 		FROM staging_updates
 		WHERE app_id = ? AND version_code = ? AND user_gh_id = ?`,
 		appID,
+		appID,
 		versionCode,
 		ghID,
-	).Scan(&label, &versionName, &fileHandle, &issueGroupID)
+	).Scan(&label, &versionName, &fileHandle, &issueGroupID, &needsReview)
 
 	return
 }
 
-func (s *SQLite) ApproveUpdate(appID string, versionCode int, versionName string) error {
+func (s *SQLite) ApproveUpdate(
+	appID string,
+	versionCode int,
+	versionName string,
+	issueGroupID *int,
+) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
 	if _, err := tx.Exec(
-		"UPDATE published_apps SET version_code = ?, version_name = ? WHERE id = ?",
+		`UPDATE published_apps
+		SET version_code = ?, version_name = ?, issue_group_id = ?
+		WHERE id = ?`,
 		versionCode,
 		versionName,
+		issueGroupID,
 		appID,
 	); err != nil {
 		_ = tx.Rollback()
@@ -719,12 +764,12 @@ func (s *SQLite) ApproveUpdate(appID string, versionCode int, versionName string
 	return tx.Commit()
 }
 
-func (s *SQLite) SubmitUpdate(app App, fileHandle string, issueGroupID *int) error {
+func (s *SQLite) SubmitUpdate(app App, fileHandle string, issueGroupID *int, needsReview bool) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
-	if issueGroupID != nil {
+	if needsReview {
 		if _, err := tx.Exec(
 			`INSERT INTO submitted_updates (
 				app_id,
@@ -758,10 +803,11 @@ func (s *SQLite) SubmitUpdate(app App, fileHandle string, issueGroupID *int) err
 		// No review necessary, so publish the update immediately.
 		if _, err := tx.Exec(
 			`UPDATE published_apps
-			SET version_code = ?, version_name = ?
+			SET version_code = ?, version_name = ?, issue_group_id = ?
 			WHERE id = ?`,
 			app.VersionCode,
 			app.VersionName,
+			issueGroupID,
 			app.AppID,
 		); err != nil {
 			_ = tx.Rollback()

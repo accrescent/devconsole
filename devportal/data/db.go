@@ -27,7 +27,9 @@ type DB interface {
 	GetApprovedApps() ([]App, error)
 	GetApps(ghID int64) ([]App, error)
 	GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error)
-	GetSubmittedAppInfo(appID string) (app App, ghID int64, iconID int, fileHandle string, err error)
+	GetSubmittedAppInfo(
+		appID string,
+	) (app App, ghID int64, iconID int, issueGroupID *int, fileHandle string, err error)
 	ApproveApp(appID string) error
 	PublishApp(appID string) error
 	SubmitApp(appID string, label string, ghID int64) error
@@ -37,14 +39,21 @@ type DB interface {
 	GetUpdateInfo(
 		appID string,
 		versionCode int,
-	) (firstVersion int, versionName string, fileHandle string, err error)
+	) (firstVersion int, versionName string, fileHandle string, issueGroupID *int, err error)
 	GetUpdates(reviewerGhID int64) ([]AppWithIssues, error)
 	GetStagingUpdateInfo(
 		appID string,
 		versionCode int,
 		ghID int64,
-	) (label string, versionName string, fileHandle string, issueGroupID *int, err error)
-	ApproveUpdate(appID string, versionCode int, versionName string) error
-	SubmitUpdate(app App, fileHandle string, issueGroupID *int) error
+	) (
+		label string,
+		versionName string,
+		fileHandle string,
+		issueGroupID *int,
+		needsReview bool,
+		err error,
+	)
+	ApproveUpdate(appID string, versionCode int, versionName string, issueGroupID *int) error
+	SubmitUpdate(app App, fileHandle string, issueGroupID *int, needsReview bool) error
 	DeleteSubmittedUpdate(appID string, versionCode int) error
 }
