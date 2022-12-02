@@ -1,7 +1,7 @@
 # Accrescent Developer Console
 
 The Accrescent developer console - a web application for developers to upload
-and manage their apps in the Accrescent app repository.
+and manage their apps in the Accrescent app store.
 
 **Note: Accrescent is not yet ready for production usage. Consider all software
 and services run by this organization as in a "pre-alpha" stage and fit only for
