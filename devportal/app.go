@@ -86,5 +86,9 @@ func (a *App) Start() error {
 }
 
 func (a *App) Stop(ctx context.Context) error {
-	return a.server.Shutdown(ctx)
+	if err := a.server.Shutdown(ctx); err != nil {
+		return err
+	}
+
+	return a.db.Close()
 }
