@@ -20,6 +20,12 @@ import (
 
 func main() {
 	db := new(data.SQLite)
+	if err := db.Open("devconsole.db?_fk=yes&_journal=WAL"); err != nil {
+		log.Fatal(err)
+	}
+	if err := db.Initialize(); err != nil {
+		log.Fatal(err)
+	}
 
 	fileStorage := data.NewLocalStorage("/")
 
@@ -41,7 +47,7 @@ func main() {
 		APIKey:         os.Getenv("API_KEY"),
 	}
 
-	app, err := NewApp(db, "devconsole.db?_fk=yes&_journal=WAL", fileStorage, oauth2Conf, conf)
+	app, err := NewApp(db, fileStorage, oauth2Conf, conf)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -22,18 +22,10 @@ type App struct {
 
 func NewApp(
 	db data.DB,
-	dsn string,
 	fileStorage data.FileStorage,
 	oauth2Conf oauth2.Config,
 	conf config.Config,
 ) (*App, error) {
-	if err := db.Open(dsn); err != nil {
-		return nil, err
-	}
-	if err := db.Initialize(); err != nil {
-		return nil, err
-	}
-
 	router := gin.New()
 	router.Use(gin.Logger())
 	if err := router.SetTrustedProxies(nil); err != nil {
