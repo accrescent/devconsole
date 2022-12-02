@@ -10,10 +10,12 @@ import { AppService } from '../app.service';
 })
 export class AppListComponent implements OnInit {
     apps: App[] = [];
+    submittedApps: App[] = [];
 
     constructor(private appService: AppService) {}
 
     ngOnInit(): void {
         this.appService.getApps().subscribe(apps => this.apps = apps);
+        this.appService.getSubmittedApps().subscribe(apps => this.submittedApps = apps);
     }
 }

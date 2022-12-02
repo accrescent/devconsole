@@ -476,6 +476,32 @@ func (s *SQLite) GetSubmittedAppInfo(
 	return
 }
 
+func (s *SQLite) GetSubmittedApps(ghID int64) ([]App, error) {
+	rows, err := s.db.Query(
+		`SELECT id, label, version_code, version_name
+		FROM submitted_apps
+		WHERE gh_id = ?`,
+		ghID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var apps []App
+	for rows.Next() {
+		var appID, label, versionName string
+		var versionCode int32
+		if err := rows.Scan(&appID, &label, &versionCode, &versionName); err != nil {
+			return nil, err
+		}
+
+		app := App{appID, label, versionCode, versionName}
+		apps = append(apps, app)
+	}
+
+	return apps, err
+}
+
 func (s *SQLite) ApproveApp(appID string) error {
 	_, err := s.db.Exec("UPDATE submitted_apps SET approved = TRUE WHERE id = ?", appID)
 

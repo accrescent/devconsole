@@ -17,3 +17,18 @@
         </button>
     </mat-card-actions>
 </mat-card>
+
+<mat-card *ngFor="let submitted_app of submittedApps">
+    <mat-card-header>
+        <mat-card-title>{{ submitted_app.label }}</mat-card-title>
+        <mat-card-subtitle>{{ submitted_app.app_id}}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+        <br>
+        <h4>Submitted app info</h4>
+        <ul>
+            <li>Version code: {{ submitted_app.version_code }}</li>
+            <li>Version name: {{ submitted_app.version_name }}</li>
+        </ul>
+    </mat-card-content>
+</mat-card>

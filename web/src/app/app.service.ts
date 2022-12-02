@@ -10,6 +10,7 @@ import { App } from './app';
 })
 export class AppService {
     private readonly appsUrl = 'api/apps';
+    private readonly submittedAppsUrl = 'api/submitted-apps';
     private readonly pendingAppsUrl = 'api/pending-apps';
     private readonly updatesUrl = 'api/updates';
     private readonly approvedAppsUrl = 'api/approved-apps';
@@ -18,6 +19,10 @@ export class AppService {
 
     getApps(): Observable<App[]> {
         return this.http.get<App[]>(this.appsUrl);
+    }
+
+    getSubmittedApps(): Observable<App[]> {
+        return this.http.get<App[]>(this.submittedAppsUrl);
     }
 
     getPendingApps(): Observable<App[]> {
