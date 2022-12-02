@@ -27,5 +27,5 @@ these steps:
    directory is internal to the container.
 7. Generate a TLS certificate & key and store them as `certs/cert.pem` &
    `certs/key.pem` respectively.
-8. Start the application by running `docker-compose up`
+8. Start the application by running `docker compose up`
 9. The web application is now accessible at `https://localhost:8080`
