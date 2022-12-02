@@ -58,8 +58,7 @@ func SubmitUpdate(c *gin.Context) {
 		VersionCode: int32(versionCode),
 		VersionName: versionName,
 	}
-	err = db.SubmitUpdate(app, fileHandle, issueGroupID)
-	if err != nil {
+	if err := db.SubmitUpdate(app, fileHandle, issueGroupID); err != nil {
 		if errors.Is(err.(sqlite3.Error).ExtendedCode, sqlite3.ErrConstraintUnique) {
 			_ = c.AbortWithError(http.StatusConflict, err)
 		} else {
