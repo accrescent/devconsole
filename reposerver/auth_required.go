@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/subtle"
 	"net/http"
 	"strings"
 
@@ -27,7 +28,7 @@ func authRequired(apiKey string) gin.HandlerFunc {
 		}
 
 		token := headerParts[1]
-		if token != apiKey {
+		if subtle.ConstantTimeCompare([]byte(token), []byte(apiKey)) == 0 {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
