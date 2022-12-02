@@ -84,7 +84,7 @@ func (s *SQLite) Initialize() error {
 	}
 	if _, err := s.db.Exec(`CREATE TABLE IF NOT EXISTS issues (
 		id TEXT NOT NULL,
-		issue_group_id INT NOT NULL REFERENCES issue_groups(id),
+		issue_group_id INT NOT NULL REFERENCES issue_groups(id) ON DELETE CASCADE,
 		PRIMARY KEY (id, issue_group_id)
 	) STRICT`); err != nil {
 		return err
