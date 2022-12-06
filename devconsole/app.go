@@ -32,7 +32,7 @@ func NewApp(
 		return nil, err
 	}
 	router.Use(middleware.DB(db))
-	router.Use(middleware.FileStorage(data.NewLocalStorage("/")))
+	router.Use(middleware.FileStorage(fileStorage))
 	router.Use(middleware.OAuth2Config(oauth2Conf))
 	router.Use(middleware.Config(conf))
 
