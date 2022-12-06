@@ -1,0 +1,36 @@
+[Unit]
+Description=Accrescent repo server
+
+[Service]
+Environment="GIN_MODE=release"
+ExecStart=/opt/reposerver/reposerver
+WorkingDirectory=/srv/staging.store.accrescent.app
+
+CapabilityBoundingSet=
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+NoNewPrivileges=yes
+PrivateDevices=yes
+PrivateTmp=yes
+PrivateUsers=yes
+ProtectClock=yes
+ProtectControlGroups=yes
+ProtectHome=yes
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectProc=invisible
+ProtectSystem=strict
+ReadWritePaths=/srv/staging.store.accrescent.app
+RemoveIPC=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+SystemCallArchitectures=native
+UMask=0022
+User=reposerver
+
+[Install]
+WantedBy=multi-user.target

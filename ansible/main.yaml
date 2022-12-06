@@ -100,6 +100,43 @@
         enabled: yes
         state: started
 
+- name: Set up reposerver
+  hosts: repos
+  become: yes
+  tasks:
+    - name: Create application user
+      ansible.builtin.user:
+        name: reposerver
+        create_home: false
+        password: '!'
+        shell: /usr/sbin/nologin
+        umask: 0077
+    - name: Install application
+      ansible.builtin.copy:
+        src: ./reposerver
+        dest: /opt/reposerver/
+        mode: 755
+    - name: Allow nginx to read static files
+      community.general.sefcontext:
+        target: '/srv/staging.store.accrescent.app(/.*)?'
+        setype: httpd_sys_content_t
+    - name: Create static file directory
+      ansible.builtin.file:
+        path: /srv/staging.store.accrescent.app
+        state: directory
+        owner: reposerver
+        group: reposerver
+        mode: 0755
+    - name: Install systemd service
+      ansible.builtin.copy:
+        src: ./reposerver.service
+        dest: /usr/lib/systemd/system/reposerver.service
+    - name: Enable and start systemd service
+      ansible.builtin.systemd:
+        name: reposerver
+        enabled: yes
+        state: started
+
 - name: Set up nginx
   hosts: all
   become: yes
@@ -126,6 +163,28 @@
     - name: Install root config
       ansible.builtin.copy:
         src: nginx/devconsole.conf
+        dest: /etc/nginx/nginx.conf
+    - name: Install security config
+      ansible.builtin.copy:
+        src: nginx/security.conf
+        dest: /etc/nginx/security.conf
+    - name: Reload nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
+
+- name: Set up nginx for reposerver
+  hosts: repos
+  become: yes
+  tasks:
+    - name: Allow nginx proxying
+      ansible.posix.seboolean:
+        name: httpd_can_network_connect
+        persistent: yes
+        state: yes
+    - name: Install root config
+      ansible.builtin.copy:
+        src: nginx/reposerver.conf
         dest: /etc/nginx/nginx.conf
     - name: Install security config
       ansible.builtin.copy:
