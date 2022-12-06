@@ -1,0 +1,133 @@
+---
+- name: Enable automatic updates
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install dnf-automatic
+      ansible.builtin.dnf:
+        name: dnf-automatic
+        state: latest
+    - name: Enable and start dnf-automatic-install.timer
+      ansible.builtin.systemd:
+        name: dnf-automatic-install.timer
+        enabled: yes
+        state: started
+    - name: Install cron
+      ansible.builtin.dnf:
+        name: cronie
+        state: latest
+    - name: Enable and start crond
+      ansible.builtin.systemd:
+        name: crond
+        enabled: yes
+        state: started
+    - name: Enable automatic reboots
+      ansible.builtin.cron:
+        name: autoreboot
+        special_time: daily
+        job: /usr/sbin/reboot
+
+- name: Set up firewall
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install firewalld
+      ansible.builtin.dnf:
+        name: firewalld
+        state: latest
+    - name: Enable and start firewalld
+      ansible.builtin.systemd:
+        name: firewalld
+        enabled: yes
+        state: started
+    - name: Permit inbound SSH
+      ansible.posix.firewalld:
+        immediate: yes
+        permanent: true
+        service: ssh
+        state: enabled
+    - name: Permit inbound HTTP
+      ansible.posix.firewalld:
+        immediate: yes
+        permanent: true
+        service: http
+        state: enabled
+    - name: Permit inbound HTTPS
+      ansible.posix.firewalld:
+        immediate: yes
+        permanent: true
+        service: https
+        state: enabled
+
+- name: Set up devconsole
+  hosts: consoles
+  become: yes
+  tasks:
+    - name: Create application user
+      ansible.builtin.user:
+        name: devconsole
+        create_home: false
+        password: '!'
+        shell: /usr/sbin/nologin
+        umask: 0077
+    - name: Install application
+      ansible.builtin.copy:
+        src: ./devconsole
+        dest: /opt/devconsole/
+        mode: 755
+    - name: Install static web files
+      ansible.builtin.copy:
+        src: ./dist/web/
+        dest: /srv/staging.dev.accrescent.app/
+    - name: Create application data directory
+      ansible.builtin.file:
+        path: /var/lib/devconsole
+        state: directory
+        owner: devconsole
+        group: devconsole
+        mode: 0700
+    - name: Install systemd service
+      ansible.builtin.copy:
+        src: ./devconsole.service
+        dest: /usr/lib/systemd/system/devconsole.service
+    - name: Enable and start systemd service
+      ansible.builtin.systemd:
+        name: devconsole
+        enabled: yes
+        state: started
+
+- name: Set up nginx
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install nginx
+      ansible.builtin.dnf:
+        name: nginx
+        state: latest
+    - name: Enable and start nginx service
+      ansible.builtin.systemd:
+        name: nginx
+        enabled: yes
+        state: started
+
+- name: Set up nginx for devconsole
+  hosts: consoles
+  become: yes
+  tasks:
+    - name: Allow nginx proxying
+      ansible.posix.seboolean:
+        name: httpd_can_network_connect
+        persistent: yes
+        state: yes
+    - name: Install root config
+      ansible.builtin.copy:
+        src: nginx/devconsole.conf
+        dest: /etc/nginx/nginx.conf
+    - name: Install security config
+      ansible.builtin.copy:
+        src: nginx/security.conf
+        dest: /etc/nginx/security.conf
+    - name: Reload nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: reloaded
