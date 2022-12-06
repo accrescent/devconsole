@@ -3,6 +3,7 @@ module github.com/accrescent/reposerver
 go 1.19
 
 require (
+	github.com/BurntSushi/toml v1.2.1
 	github.com/gin-gonic/gin v1.8.1
 	golang.org/x/exp v0.0.0-20221205204356-47842c84f3db
 )

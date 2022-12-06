@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/gin-gonic/gin"
 
 	"github.com/accrescent/reposerver/api"
@@ -24,11 +25,22 @@ func main() {
 		log.Fatal(err)
 	}
 
-	apiKey := os.Getenv("API_KEY")
-	publishDir := os.Getenv("PUBLISH_DIR")
+	var conf config
 
-	auth := router.Group("/", authRequired(apiKey))
-	auth.Use(middleware.PublishDir(publishDir))
+	confFile, err := os.ReadFile("/etc/reposerver/config.toml")
+	if err == nil {
+		if err := toml.Unmarshal(confFile, &conf); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Println("Loading config from file failed. Falling back to environment.")
+
+		conf.APIKey = os.Getenv("API_KEY")
+		conf.PublishDir = os.Getenv("PUBLISH_DIR")
+	}
+
+	auth := router.Group("/", authRequired(conf.APIKey))
+	auth.Use(middleware.PublishDir(conf.PublishDir))
 	auth.POST("/apps/:id/:versionCode/:version", api.PublishApp)
 	auth.PUT("/apps/:id/:versionCode/:version", api.UpdateApp)
 
