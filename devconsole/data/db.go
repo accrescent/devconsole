@@ -17,6 +17,7 @@ type DB interface {
 	DeleteExpiredSessions() error
 	DeleteSession(id string) error
 
+	CanUserRegister(ghID int64) (bool, error)
 	CreateUser(ghID int64, email string) error
 	GetUserPermissions(appID string, ghID int64) (update bool, err error)
 	GetUserRoles(ghID int64) (registered bool, reviewer bool, err error)

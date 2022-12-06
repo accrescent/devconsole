@@ -166,6 +166,17 @@ func (s *SQLite) Initialize() error {
 			return err
 		}
 	}
+	if userVersion < 2 {
+		if _, err := s.db.Exec(`CREATE TABLE allowed_users (
+			gh_id INT PRIMARY KEY
+		) STRICT`); err != nil {
+			return err
+		}
+
+		if _, err := s.db.Exec("PRAGMA user_version = 2"); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -238,6 +249,15 @@ func (s *SQLite) DeleteSession(id string) error {
 	_, err := s.db.Exec("DELETE FROM sessions WHERE id = ?", id)
 
 	return err
+}
+
+func (s *SQLite) CanUserRegister(ghID int64) (canRegister bool, err error) {
+	err = s.db.QueryRow(
+		"SELECT EXISTS (SELECT 1 FROM allowed_users WHERE gh_id = ?)",
+		ghID,
+	).Scan(&canRegister)
+
+	return
 }
 
 func (s *SQLite) CreateUser(ghID int64, email string) error {

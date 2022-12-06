@@ -31,6 +31,7 @@ import { AppListComponent } from './app-list/app-list.component';
 import { PublishComponent } from './publish/publish.component';
 import { GlobalErrorHandler } from './global-error-handler';
 import { AuthInterceptor } from './auth-interceptor';
+import { UnauthorizedRegisterComponent } from './unauthorized-register/unauthorized-register.component';
 
 @NgModule({
     declarations: [
@@ -48,6 +49,7 @@ import { AuthInterceptor } from './auth-interceptor';
         ReviewComponent,
         AppListComponent,
         PublishComponent,
+        UnauthorizedRegisterComponent,
     ],
     imports: [
         BrowserModule,

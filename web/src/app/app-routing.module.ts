@@ -11,6 +11,7 @@ import { ReviewComponent } from './review/review.component';
 import { PublishComponent } from './publish/publish.component';
 import { LandingComponent } from './landing/landing.component';
 import { ConsoleLayoutComponent } from './console-layout/console-layout.component';
+import { UnauthorizedRegisterComponent } from './unauthorized-register/unauthorized-register.component';
 import { AuthGuard } from './auth.guard';
 import { ReviewerGuard } from './reviewer.guard';
 import { PublisherGuard } from './publisher.guard';
@@ -27,6 +28,7 @@ const routes: Routes = [
         { path: 'review', component: ReviewComponent, canActivate: [ReviewerGuard] },
         { path: 'publish', component: PublishComponent, canActivate: [PublisherGuard] },
     ] },
+    { path: 'unauthorized-register', component: UnauthorizedRegisterComponent },
 ];
 
 @NgModule({
