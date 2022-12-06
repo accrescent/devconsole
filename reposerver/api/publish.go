@@ -16,6 +16,7 @@ import (
 )
 
 func publish(c *gin.Context, uploadType uploadType) {
+	publishDir := c.MustGet("publish_dir").(string)
 	appID := c.Param("id")
 	versionCode := c.Param("versionCode")
 	versionCodeInt, err := strconv.Atoi(versionCode)
@@ -46,7 +47,6 @@ func publish(c *gin.Context, uploadType uploadType) {
 	}
 
 	// Extract APKs from APK set
-	publishDir := os.Getenv("PUBLISH_DIR")
 	appDir := filepath.Join(publishDir, appID)
 	apkOutDir := filepath.Join(appDir, versionCode)
 	if err := os.MkdirAll(apkOutDir, 0755); err != nil {

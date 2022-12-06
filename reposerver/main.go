@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/accrescent/reposerver/api"
+	"github.com/accrescent/reposerver/middleware"
 )
 
 func main() {
@@ -24,8 +25,10 @@ func main() {
 	}
 
 	apiKey := os.Getenv("API_KEY")
+	publishDir := os.Getenv("PUBLISH_DIR")
 
 	auth := router.Group("/", authRequired(apiKey))
+	auth.Use(middleware.PublishDir(publishDir))
 	auth.POST("/apps/:id/:versionCode/:version", api.PublishApp)
 	auth.PUT("/apps/:id/:versionCode/:version", api.UpdateApp)
 
