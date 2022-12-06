@@ -41,8 +41,8 @@ func main() {
 
 	auth := router.Group("/", authRequired(conf.APIKey))
 	auth.Use(middleware.PublishDir(conf.PublishDir))
-	auth.POST("/apps/:id/:versionCode/:version", api.PublishApp)
-	auth.PUT("/apps/:id/:versionCode/:version", api.UpdateApp)
+	auth.POST("/api/apps/:id/:versionCode/:version", api.PublishApp)
+	auth.PUT("/api/apps/:id/:versionCode/:version", api.UpdateApp)
 
 	srv := &http.Server{
 		Addr:    ":8080",
