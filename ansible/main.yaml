@@ -75,6 +75,10 @@
         src: ./devconsole
         dest: /opt/devconsole/
         mode: 755
+    - name: Allow nginx to read static web files
+      community.general.sefcontext:
+        target: '/srv/staging.dev.accrescent.app(/.*)?'
+        setype: httpd_sys_content_t
     - name: Install static web files
       ansible.builtin.copy:
         src: ./dist/web/
