@@ -31,3 +31,6 @@ RestrictSUIDSGID=yes
 SystemCallArchitectures=native
 UMask=0077
 User=devconsole
+
+[Install]
+WantedBy=multi-user.target
