@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fileStorage := data.NewLocalStorage("/")
+	fileStorage := data.NewLocalStorage(".")
 
 	oauth2Conf, conf, err := db.LoadConfig()
 	if err != nil {
