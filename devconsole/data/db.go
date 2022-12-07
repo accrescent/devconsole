@@ -54,7 +54,7 @@ type DB interface {
 	GetUpdates(reviewerGhID int64) ([]AppWithIssues, error)
 	GetStagingUpdateInfo(
 		appID string,
-		versionCode int,
+		versionCode int32,
 		ghID int64,
 	) (
 		label string,

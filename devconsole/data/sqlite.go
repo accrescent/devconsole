@@ -869,7 +869,7 @@ func (s *SQLite) GetUpdates(reviewerGhID int64) ([]AppWithIssues, error) {
 
 func (s *SQLite) GetStagingUpdateInfo(
 	appID string,
-	versionCode int,
+	versionCode int32,
 	ghID int64,
 ) (label string, versionName string, fileHandle string, issueGroupID *int, needsReview bool, err error) {
 	// We determine the update needs review if it has any review issues that the published app

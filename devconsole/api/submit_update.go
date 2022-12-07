@@ -25,7 +25,7 @@ func SubmitUpdate(c *gin.Context) {
 
 	label, versionName, fileHandle, issueGroupID, needsReview, err := db.GetStagingUpdateInfo(
 		appID,
-		versionCode,
+		int32(versionCode),
 		ghID,
 	)
 	if err != nil {
