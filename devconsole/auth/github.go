@@ -37,6 +37,28 @@ func GitHubCallback(c *gin.Context) {
 	conf := c.MustGet("config").(config.Config)
 	oauth2Conf := c.MustGet("oauth2_config").(oauth2.Config)
 
+	// Use existing session if possible
+	sessionID, err := c.Cookie(SessionCookie)
+	if err == nil {
+		ghID, _, err := db.GetSessionInfo(sessionID)
+		if err == nil {
+			registered, reviewer, err := db.GetUserRoles(ghID)
+			if err != nil {
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
+				return
+			}
+
+			c.JSON(http.StatusOK, gin.H{
+				"logged_in":  true,
+				"registered": registered,
+				"reviewer":   reviewer,
+				"publisher":  ghID == conf.SignerGitHubID,
+			})
+
+			return
+		}
+	}
+
 	stateParam, exists := c.GetQuery("state")
 	if !exists {
 		c.SetCookie(authStateCookie, "", -1, "/", "", true, true)
