@@ -33,7 +33,8 @@ func publish(
 	}
 
 	req, err := http.NewRequest(
-		method, fmt.Sprintf("%s/apps/%s/%d/%s", conf.RepoURL, appID, versionCode, versionName),
+		method,
+		fmt.Sprintf("%s/api/apps/%s/%d/%s", conf.RepoURL, appID, versionCode, versionName),
 		file,
 	)
 	if err != nil {
