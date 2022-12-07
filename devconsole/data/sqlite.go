@@ -486,6 +486,16 @@ func (s *SQLite) GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error) {
 	return apps, nil
 }
 
+func (s *SQLite) GetStagingAppInfo(appID string, ghID int64) (fileHandle string, err error) {
+	err = s.db.QueryRow(
+		`SELECT file_handle FROM staging_apps WHERE id = ? AND user_gh_id = ?`,
+		appID,
+		ghID,
+	).Scan(&fileHandle)
+
+	return
+}
+
 func (s *SQLite) GetSubmittedAppInfo(
 	appID string,
 ) (
