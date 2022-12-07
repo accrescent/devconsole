@@ -7,6 +7,8 @@
     Select APK set
 </button>
 <p>{{ fileinput.value.replace("C:\\fakepath\\", "") }}</p>
+<mat-progress-bar *ngIf="uploadProgress !== 0" [value]="uploadProgress" class="progress-bar">
+</mat-progress-bar>
 
 <form *ngIf="app" [formGroup]="form" (ngSubmit)="onSubmit()">
     <h2>Update info</h2>

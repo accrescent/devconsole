@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpRequest } from '@angular/common/http';
 
 import { Observable } from 'rxjs';
 
@@ -50,19 +50,25 @@ export class AppService {
         return this.http.delete<void>(`${this.pendingAppsUrl}/${appId}`);
     }
 
-    uploadApp(app: File, icon: File): Observable<App> {
+    uploadApp(app: File, icon: File): Observable<HttpEvent<App>> {
         const formData = new FormData();
         formData.append("app", app);
         formData.append("icon", icon);
 
-        return this.http.post<App>(this.appsUrl, formData);
+        const req = new HttpRequest('POST', this.appsUrl, formData, { reportProgress: true });
+
+        return this.http.request(req);
     }
 
-    uploadUpdate(app: File, appId: string): Observable<App> {
+    uploadUpdate(app: File, appId: string): Observable<HttpEvent<App>> {
         const formData = new FormData();
         formData.append("app", app);
 
-        return this.http.post<App>(`${this.appsUrl}/${appId}/updates`, formData);
+        const req = new HttpRequest('POST', `${this.appsUrl}/${appId}/updates`, formData, {
+            reportProgress: true,
+        });
+
+        return this.http.request(req);
     }
 
     submitApp(id: string, label: string): Observable<void> {
