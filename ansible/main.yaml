@@ -150,16 +150,16 @@
         name: nginx
         enabled: yes
         state: started
-
-- name: Set up nginx for devconsole
-  hosts: consoles
-  become: yes
-  tasks:
     - name: Allow nginx proxying
       ansible.posix.seboolean:
         name: httpd_can_network_connect
         persistent: yes
         state: yes
+
+- name: Set up nginx for devconsole
+  hosts: consoles
+  become: yes
+  tasks:
     - name: Install root config
       ansible.builtin.copy:
         src: nginx/devconsole.conf
@@ -177,11 +177,6 @@
   hosts: repos
   become: yes
   tasks:
-    - name: Allow nginx proxying
-      ansible.posix.seboolean:
-        name: httpd_can_network_connect
-        persistent: yes
-        state: yes
     - name: Install root config
       ansible.builtin.copy:
         src: nginx/reposerver.conf
