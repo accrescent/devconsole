@@ -11,6 +11,7 @@ import (
 
 func RejectUpdate(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
+	storage := c.MustGet("storage").(data.FileStorage)
 	appID := c.Param("id")
 	versionCode, err := strconv.Atoi(c.Param("version"))
 	if err != nil {
@@ -18,7 +19,16 @@ func RejectUpdate(c *gin.Context) {
 		return
 	}
 
+	_, _, handle, _, err := db.GetUpdateInfo(appID, versionCode)
+	if err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 	if err := db.DeleteSubmittedUpdate(appID, versionCode); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if err := storage.DeleteApp(handle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

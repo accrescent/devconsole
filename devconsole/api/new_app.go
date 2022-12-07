@@ -2,6 +2,7 @@ package api
 
 import (
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"image"
@@ -64,6 +65,26 @@ func NewApp(c *gin.Context) {
 		return
 	}
 
+	m := apk.Manifest()
+
+	// If app already exists on disk, delete it
+	overwrite := true
+	handle, err := db.GetStagingAppInfo(m.Package, ghID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			overwrite = false
+		} else {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+	if overwrite {
+		if err := storage.DeleteApp(handle); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+
 	// App passed all automated checks, so save it to disk
 	apkSetHandle, iconHandle, err := storage.SaveNewApp(appFile, formIconFile)
 	if err != nil {
@@ -73,8 +94,6 @@ func NewApp(c *gin.Context) {
 
 	// Run tests whose failures warrant manual review
 	issues := quality.RunReviewTests(apk)
-
-	m := apk.Manifest()
 
 	hasher := sha256.New()
 	if _, err := io.Copy(hasher, formIconFile); err != nil {

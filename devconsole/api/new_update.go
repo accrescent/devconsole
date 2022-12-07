@@ -72,6 +72,24 @@ func NewUpdate(c *gin.Context) {
 		return
 	}
 
+	// If update already exists on disk, delete it
+	overwrite := true
+	_, _, handle, _, _, err := db.GetStagingUpdateInfo(appID, m.VersionCode, ghID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			overwrite = false
+		} else {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+	if overwrite {
+		if err := storage.DeleteApp(handle); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+
 	// App passed all automated checks, so save it to disk
 	apkSetHandle, err := storage.SaveUpdate(appFile)
 	if err != nil {

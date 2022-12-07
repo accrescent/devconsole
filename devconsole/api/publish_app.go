@@ -13,6 +13,7 @@ import (
 
 func PublishApp(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
+	storage := c.MustGet("storage").(data.FileStorage)
 	appID := c.Param("id")
 
 	app, _, _, _, handle, err := db.GetSubmittedAppInfo(appID)
@@ -23,6 +24,12 @@ func PublishApp(c *gin.Context) {
 
 	// Publish to repository server
 	if err := publish(c, appID, app.VersionCode, app.VersionName, quality.NewApp, handle); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Delete local copy of app once it's published
+	if err := storage.DeleteApp(handle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

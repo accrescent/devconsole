@@ -14,6 +14,7 @@ import (
 
 func ApproveUpdate(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
+	storage := c.MustGet("storage").(data.FileStorage)
 	appID := c.Param("id")
 	versionCode, err := strconv.Atoi(c.Param("version"))
 	if err != nil {
@@ -44,6 +45,12 @@ func ApproveUpdate(c *gin.Context) {
 		quality.Update,
 		fileHandle,
 	); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	// Delete local copy of update once it's published
+	if err := storage.DeleteApp(fileHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

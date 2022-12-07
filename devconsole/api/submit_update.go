@@ -15,6 +15,7 @@ import (
 
 func SubmitUpdate(c *gin.Context) {
 	db := c.MustGet("db").(data.DB)
+	storage := c.MustGet("storage").(data.FileStorage)
 	ghID := c.MustGet("gh_id").(int64)
 	appID := c.Param("id")
 	versionCode, err := strconv.Atoi(c.Param("version"))
@@ -47,6 +48,12 @@ func SubmitUpdate(c *gin.Context) {
 			quality.Update,
 			fileHandle,
 		); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+
+		// Delete update locally after publishing
+		if err := storage.DeleteApp(fileHandle); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
