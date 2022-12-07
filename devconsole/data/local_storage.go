@@ -76,3 +76,7 @@ func (s *LocalStorage) GetAPKSet(apkSetHandle string) (file io.Reader, size int6
 
 	return apkSet, apkSetInfo.Size(), nil
 }
+
+func (s *LocalStorage) DeleteApp(handle string) error {
+	return os.RemoveAll(filepath.Dir(handle))
+}
