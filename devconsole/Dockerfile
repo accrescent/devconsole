@@ -12,7 +12,7 @@ RUN go install github.com/mattn/go-sqlite3
 
 COPY . .
 
-RUN go generate && go build -tags=nomsgpack -o /devconsole
+RUN go generate && go build -tags=debug,nomsgpack -o /devconsole
 
 EXPOSE 8080
 

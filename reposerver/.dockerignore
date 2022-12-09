@@ -4,5 +4,7 @@
 !/config.go
 !/go.mod
 !/go.sum
+!/load_config.go
+!/load_config_debug.go
 !/main.go
 !/middleware

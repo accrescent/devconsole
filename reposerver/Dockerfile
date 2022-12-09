@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN go build -tags=nomsgpack -o /reposerver
+RUN go build -tags=debug,nomsgpack -o /reposerver
 
 EXPOSE 8080
 
