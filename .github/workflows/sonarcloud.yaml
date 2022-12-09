@@ -18,7 +18,11 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - run: cd devconsole && go test -v -coverprofile=coverage.out ./...
+      - name: Install protoc
+        run: |
+          sudo apt-get install protobuf-compiler
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+      - run: cd devconsole && go generate && go test -v -coverprofile=coverage.out ./...
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:

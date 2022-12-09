@@ -5,9 +5,22 @@ import (
 	"fmt"
 
 	"github.com/accrescent/apkstat"
+	"golang.org/x/mod/semver"
+
+	pb "github.com/accrescent/devconsole/pb"
 )
 
-func RunRejectTests(apk *apk.APK, uploadType UploadType) error {
+func RunRejectTests(metadata *pb.BuildApksResult, apk *apk.APK, uploadType UploadType) error {
+	// Bundletool version used to generate APK set
+	bundletoolVersion := metadata.GetBundletool().GetVersion()
+	if semver.Compare("v"+bundletoolVersion, "v"+MIN_BUNDLETOOL_VERSION) == -1 {
+		return fmt.Errorf(
+			"APK set generated with bundletool %s but mininum supported version is %s",
+			bundletoolVersion,
+			MIN_BUNDLETOOL_VERSION,
+		)
+	}
+
 	manifest := apk.Manifest()
 	targetSDK := manifest.UsesSDK.TargetSDKVersion
 
