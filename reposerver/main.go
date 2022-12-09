@@ -39,7 +39,7 @@ func main() {
 		conf.PublishDir = os.Getenv("PUBLISH_DIR")
 	}
 
-	auth := router.Group("/", authRequired(conf.APIKey))
+	auth := router.Group("/", middleware.AuthRequired(conf.APIKey))
 	auth.Use(middleware.PublishDir(conf.PublishDir))
 	auth.POST("/api/apps/:id/:versionCode/:version", api.PublishApp)
 	auth.PUT("/api/apps/:id/:versionCode/:version", api.UpdateApp)

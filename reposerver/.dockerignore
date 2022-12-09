@@ -1,7 +1,6 @@
 *
 
 !/api
-!/auth_required.go
 !/config.go
 !/go.mod
 !/go.sum

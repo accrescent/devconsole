@@ -1,4 +1,4 @@
-package main
+package middleware
 
 import (
 	"crypto/subtle"
@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func authRequired(apiKey string) gin.HandlerFunc {
+func AuthRequired(apiKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth := c.GetHeader("Authorization")
 		if auth == "" {
