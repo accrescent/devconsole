@@ -8,3 +8,5 @@
 !/load_config_debug.go
 !/main.go
 !/middleware
+!/set_mode.go
+!/set_mode_debug.go

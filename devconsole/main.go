@@ -16,6 +16,8 @@ import (
 //go:generate protoc -I proto --go_out pb proto/commands.proto proto/config.proto proto/targeting.proto
 
 func main() {
+	setMode()
+
 	db := new(data.SQLite)
 	if err := db.Open("devconsole.db?_fk=yes&_journal=WAL"); err != nil {
 		log.Fatal(err)

@@ -13,4 +13,6 @@
 !/middleware
 !/pb
 !/proto
+!/set_mode.go
+!/set_mode_debug.go
 !/quality

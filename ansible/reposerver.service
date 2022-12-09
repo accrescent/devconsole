@@ -2,7 +2,6 @@
 Description=Accrescent repo server
 
 [Service]
-Environment="GIN_MODE=release"
 ExecStart=/opt/reposerver/reposerver
 WorkingDirectory=/srv/staging.store.accrescent.app
 

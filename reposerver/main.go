@@ -17,6 +17,8 @@ import (
 )
 
 func main() {
+	setMode()
+
 	router := gin.New()
 	router.Use(gin.Logger())
 	err := router.SetTrustedProxies(nil)

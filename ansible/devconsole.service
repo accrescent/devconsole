@@ -2,7 +2,6 @@
 Description=Accrescent developer console
 
 [Service]
-Environment="GIN_MODE=release"
 ExecStart=/opt/devconsole/devconsole
 WorkingDirectory=/var/lib/devconsole
 
