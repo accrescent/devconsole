@@ -11,10 +11,14 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
+      - name: Install protoc
+        run: |
+          sudo apt-get install protobuf-compiler
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
       - name: Build devconsole
-        run: cd devconsole && go build -v
+        run: cd devconsole && go generate -v && go build -v
       - name: Build reposerver
-        run: cd reposerver && go build -v
+        run: cd reposerver && go generate -v && go build -v
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -23,6 +27,12 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
+      - name: Install protoc
+        run: |
+          sudo apt-get install protobuf-compiler
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+      - name: Generate source
+        run: cd devconsole && go generate
       - name: Lint devconsole
         uses: golangci/golangci-lint-action@v3
         with:
@@ -41,5 +51,9 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
+      - name: Install protoc
+        run: |
+          sudo apt-get install protobuf-compiler
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
       - name: Test devconsole
-        run: cd devconsole && go test -v ./...
+        run: cd devconsole && go generate && go test -v ./...

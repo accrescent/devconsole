@@ -7,8 +7,10 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/google/go-github/v48 v48.2.0
 	github.com/mattn/go-sqlite3 v1.14.16
-	golang.org/x/exp v0.0.0-20221205204356-47842c84f3db
+	golang.org/x/exp v0.0.0-20221208152030-732eee02a75a
+	golang.org/x/mod v0.7.0
 	golang.org/x/oauth2 v0.3.0
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
@@ -31,6 +33,5 @@ require (
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

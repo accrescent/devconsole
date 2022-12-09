@@ -35,7 +35,7 @@ func NewUpdate(c *gin.Context) {
 	}
 
 	// We've received the (supposed) APK set. Now extract the app metadata.
-	apk, appFile, err := openAPKSet(file)
+	metadata, apk, appFile, err := openAPKSet(file)
 	if err != nil {
 		if errors.Is(err, ErrFatalIO) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -67,7 +67,7 @@ func NewUpdate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err})
 		return
 	}
-	if err := quality.RunRejectTests(apk, quality.Update); err != nil {
+	if err := quality.RunRejectTests(metadata, apk, quality.Update); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}

@@ -1,6 +1,7 @@
 FROM golang:1.19-alpine
 
-RUN apk --no-cache add libc-dev gcc
+RUN apk --no-cache add libc-dev gcc protoc protobuf-dev
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 WORKDIR /app
 
@@ -11,7 +12,7 @@ RUN go install github.com/mattn/go-sqlite3
 
 COPY . .
 
-RUN go build -tags=nomsgpack -o /devconsole
+RUN go generate && go build -tags=nomsgpack -o /devconsole
 
 EXPOSE 8080
 

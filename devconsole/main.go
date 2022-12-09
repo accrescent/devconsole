@@ -18,6 +18,8 @@ import (
 	"github.com/accrescent/devconsole/data"
 )
 
+//go:generate protoc -I proto --go_out pb proto/commands.proto proto/config.proto proto/targeting.proto
+
 func main() {
 	db := new(data.SQLite)
 	if err := db.Open("devconsole.db?_fk=yes&_journal=WAL"); err != nil {

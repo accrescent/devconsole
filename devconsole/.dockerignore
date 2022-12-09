@@ -9,4 +9,6 @@
 !/go.sum
 !/main.go
 !/middleware
+!/pb
+!/proto
 !/quality
