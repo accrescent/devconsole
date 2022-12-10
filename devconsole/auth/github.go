@@ -47,12 +47,13 @@ func GitHubCallback(c *gin.Context) {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
 				return
 			}
+			publisher := ConstantTimeEqInt64(ghID, conf.SignerGitHubID) == 1
 
 			c.JSON(http.StatusOK, gin.H{
 				"logged_in":  true,
 				"registered": registered,
 				"reviewer":   reviewer,
-				"publisher":  ghID == conf.SignerGitHubID,
+				"publisher":  publisher,
 			})
 
 			return
@@ -130,12 +131,13 @@ func GitHubCallback(c *gin.Context) {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}
+		publisher := ConstantTimeEqInt64(*user.ID, conf.SignerGitHubID) == 1
 
 		c.JSON(http.StatusOK, gin.H{
 			"logged_in":  true,
 			"registered": registered,
 			"reviewer":   reviewer,
-			"publisher":  *user.ID == conf.SignerGitHubID,
+			"publisher":  publisher,
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
