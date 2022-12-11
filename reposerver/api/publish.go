@@ -39,11 +39,13 @@ func publish(c *gin.Context, uploadType uploadType) {
 	}
 
 	repoData := repoData{
-		Version:       version,
-		VersionCode:   versionCodeInt,
-		ABISplits:     nil,
-		DensitySplits: nil,
-		LangSplits:    nil,
+		Version:     version,
+		VersionCode: versionCodeInt,
+		// These slices are intentionally empty instead of nil so the serialized repository
+		// metadata is valid.
+		ABISplits:     []string{},
+		DensitySplits: []string{},
+		LangSplits:    []string{},
 	}
 
 	// Extract APKs from APK set
