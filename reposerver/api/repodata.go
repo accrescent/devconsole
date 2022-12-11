@@ -44,7 +44,7 @@ const (
 )
 
 type repoData struct {
-	Version       string   `json:"verison"`
+	Version       string   `json:"version"`
 	VersionCode   int      `json:"version_code"`
 	ABISplits     []string `json:"abi_splits"`
 	DensitySplits []string `json:"density_splits"`
