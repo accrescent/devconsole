@@ -31,4 +31,5 @@ var permissionReviewBlacklist = []string{
 var serviceIntentFilterActions = []string{
 	"android.accessibilityservice.AccessibilityService",
 	"android.net.VpnService",
+	"android.view.InputMethod",
 }
