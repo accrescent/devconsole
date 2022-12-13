@@ -27,3 +27,7 @@ var permissionReviewBlacklist = []string{
 	"android.permission.WRITE_CALL_LOG",
 	"android.permission.WRITE_CONTACTS",
 }
+
+var serviceIntentFilterActions = []string{
+	"android.net.VpnService",
+}
