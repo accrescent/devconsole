@@ -12,6 +12,7 @@
         </ul>
     </mat-card-content>
     <mat-card-actions align="end">
+        <button [routerLink]="app.app_id" mat-button>More</button>
         <button [routerLink]="[app.app_id, 'update']" mat-flat-button color="primary">
             Upload new update
         </button>

@@ -33,6 +33,7 @@ import { PublishComponent } from './publish/publish.component';
 import { GlobalErrorHandler } from './global-error-handler';
 import { AuthInterceptor } from './auth-interceptor';
 import { UnauthorizedRegisterComponent } from './unauthorized-register/unauthorized-register.component';
+import { AppInfoComponent } from './app-info/app-info.component';
 
 @NgModule({
     declarations: [
@@ -51,6 +52,7 @@ import { UnauthorizedRegisterComponent } from './unauthorized-register/unauthori
         AppListComponent,
         PublishComponent,
         UnauthorizedRegisterComponent,
+        AppInfoComponent,
     ],
     imports: [
         BrowserModule,

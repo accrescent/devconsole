@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
+import { AppInfoComponent } from './app-info/app-info.component';
 import { AppListComponent } from './app-list/app-list.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NewAppComponent } from './new-app/new-app.component';
@@ -23,6 +24,7 @@ const routes: Routes = [
     { path: '', component: ConsoleLayoutComponent, canActivate: [AuthGuard], children: [
         { path: 'dashboard', component: DashboardComponent },
         { path: 'apps', component: AppListComponent, },
+        { path: 'apps/:id', component: AppInfoComponent },
         { path: 'apps/:id/update', component: NewUpdateComponent },
         { path: 'new-app', component: NewAppComponent },
         { path: 'review', component: ReviewComponent, canActivate: [ReviewerGuard] },
