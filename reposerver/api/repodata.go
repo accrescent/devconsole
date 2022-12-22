@@ -15,6 +15,10 @@ var abis = []string{
 
 func getSplitInfo(s string) (name string, t splitType, typeName string) {
 	typeName = strings.TrimSuffix(strings.TrimPrefix(s, "base-"), ".apk")
+	// Detect and use APKs with uncompressed native libraries for minSdk < 23 apps.
+	// https://developer.android.com/topic/performance/reduce-apk-size#extract-false
+	typeName = strings.TrimSuffix(typeName, "_2")
+
 	switch {
 	case typeName == "master":
 		t = master

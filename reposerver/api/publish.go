@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/exp/slices"
 )
 
 func publish(c *gin.Context, uploadType uploadType) {
@@ -101,7 +102,9 @@ func publish(c *gin.Context, uploadType uploadType) {
 
 			switch typ {
 			case abi:
-				repoData.ABISplits = append(repoData.ABISplits, typeName)
+				if !slices.Contains(repoData.ABISplits, typeName) {
+					repoData.ABISplits = append(repoData.ABISplits, typeName)
+				}
 			case density:
 				repoData.DensitySplits = append(repoData.DensitySplits, typeName)
 			case lang:
