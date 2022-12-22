@@ -80,9 +80,15 @@ func publish(c *gin.Context, uploadType uploadType) {
 			return
 		}
 
-		// Publish split APKs
+		// Skip standalone APKs to save disk space. We don't need them since Accrescent only
+		// supports OS versions that support split APKs.
 		//
 		// file is safe to read at this point
+		if strings.HasPrefix(filepath.Base(file.Name), "standalone-") {
+			continue
+		}
+
+		// Publish split APKs
 		if filepath.Ext(file.Name) == ".apk" {
 			f, err := file.Open()
 			if err != nil {
