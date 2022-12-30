@@ -16,7 +16,7 @@ func PublishApp(c *gin.Context) {
 	storage := c.MustGet("storage").(data.FileStorage)
 	appID := c.Param("id")
 
-	app, _, _, _, appHandle, iconHandle, err := db.GetSubmittedAppInfo(appID)
+	app, _, _, _, appHandle, _, err := db.GetSubmittedAppInfo(appID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -35,12 +35,9 @@ func PublishApp(c *gin.Context) {
 		return
 	}
 
-	// Delete local copy of app once it's published
+	// Delete local copy of app once it's published. Note we keep the icon so we can display it
+	// to the developer.
 	if err := storage.DeleteFile(appHandle); err != nil {
-		_ = c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-	if err := storage.DeleteFile(iconHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
