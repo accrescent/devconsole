@@ -4,10 +4,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
-	"path/filepath"
 )
-
-const APP_PATH = "app.apks"
 
 type LocalStorage struct {
 	baseDir string
@@ -21,51 +18,39 @@ func (s *LocalStorage) SaveNewApp(
 	apkSet multipart.File,
 	icon multipart.File,
 ) (apkSetHandle string, iconHandle string, err error) {
-	appDir, err := os.MkdirTemp(s.baseDir, "")
+	appFile, err := os.CreateTemp(s.baseDir, "*.apks")
 	if err != nil {
 		return "", "", err
 	}
-	iconDir, err := os.MkdirTemp(s.baseDir, "")
+	defer appFile.Close()
+	iconFile, err := os.CreateTemp(s.baseDir, "*.png")
 	if err != nil {
 		return "", "", err
 	}
+	defer iconFile.Close()
 
-	appPath := filepath.Join(appDir, APP_PATH)
-	if err := saveFile(apkSet, appPath); err != nil {
+	if _, err := io.Copy(appFile, apkSet); err != nil {
 		return "", "", err
 	}
-	iconPath := filepath.Join(iconDir, "icon.png")
-	if err := saveFile(icon, iconPath); err != nil {
+	if _, err := io.Copy(iconFile, icon); err != nil {
 		return "", "", err
 	}
 
-	return appPath, iconPath, nil
-}
-
-func saveFile(src multipart.File, dst string) error {
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, src)
-
-	return err
+	return appFile.Name(), iconFile.Name(), nil
 }
 
 func (s *LocalStorage) SaveUpdate(apkSet multipart.File) (apkSetHandle string, err error) {
-	dir, err := os.MkdirTemp(s.baseDir, "")
+	appFile, err := os.CreateTemp(s.baseDir, "*.apks")
 	if err != nil {
 		return "", err
 	}
+	defer appFile.Close()
 
-	appPath := filepath.Join(dir, APP_PATH)
-	if err := saveFile(apkSet, appPath); err != nil {
+	if _, err := io.Copy(appFile, apkSet); err != nil {
 		return "", err
 	}
 
-	return appPath, nil
+	return appFile.Name(), nil
 }
 
 func (s *LocalStorage) GetAPKSet(apkSetHandle string) (file io.Reader, size int64, err error) {
