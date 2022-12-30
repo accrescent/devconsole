@@ -5,8 +5,7 @@ RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
 WORKDIR /app
 
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum .
 RUN go mod download
 RUN go install github.com/mattn/go-sqlite3
 
