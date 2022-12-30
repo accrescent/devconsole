@@ -86,6 +86,10 @@ func NewApp(c *gin.Context) {
 	}
 
 	// App passed all automated checks, so save it to disk
+	if _, err := formIconFile.Seek(0, io.SeekStart); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 	apkSetHandle, iconHandle, err := storage.SaveNewApp(appFile, formIconFile)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
