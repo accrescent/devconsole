@@ -95,6 +95,11 @@ func NewApp(c *gin.Context) {
 	// Run tests whose failures warrant manual review
 	issues := quality.RunReviewTests(apk)
 
+	// Calculate icon hash
+	if _, err := formIconFile.Seek(0, io.SeekStart); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 	hasher := sha256.New()
 	if _, err := io.Copy(hasher, formIconFile); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
