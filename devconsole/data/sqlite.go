@@ -486,12 +486,18 @@ func (s *SQLite) GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error) {
 	return apps, nil
 }
 
-func (s *SQLite) GetStagingAppInfo(appID string, ghID int64) (fileHandle string, err error) {
+func (s *SQLite) GetStagingAppInfo(
+	appID string,
+	ghID int64,
+) (appHandle string, iconHandle string, err error) {
 	err = s.db.QueryRow(
-		`SELECT file_handle FROM staging_apps WHERE id = ? AND user_gh_id = ?`,
+		`SELECT staging_apps.file_handle, icons.file_handle
+		FROM staging_apps
+		JOIN icons ON icons.id = icon_id
+		WHERE staging_apps.id = ? AND user_gh_id = ?`,
 		appID,
 		ghID,
-	).Scan(&fileHandle)
+	).Scan(&appHandle, &iconHandle)
 
 	return
 }
@@ -503,16 +509,35 @@ func (s *SQLite) GetSubmittedAppInfo(
 	ghID int64,
 	iconID int,
 	issueGroupID *int,
-	fileHandle string,
+	appHandle string,
+	iconHandle string,
 	err error,
 ) {
 	app.AppID = appID
 	err = s.db.QueryRow(
-		`SELECT gh_id, label, version_code, version_name, icon_id, issue_group_id, file_handle
+		`SELECT
+			gh_id,
+			label,
+			version_code,
+			version_name,
+			icon_id,
+			issue_group_id,
+			submitted_apps.file_handle,
+			icons.file_handle
 		FROM submitted_apps
-		WHERE id = ?`,
+		JOIN icons ON icons.id = icon_id
+		WHERE submitted_apps.id = ?`,
 		appID,
-	).Scan(&ghID, &app.Label, &app.VersionCode, &app.VersionName, &iconID, &issueGroupID, &fileHandle)
+	).Scan(
+		&ghID,
+		&app.Label,
+		&app.VersionCode,
+		&app.VersionName,
+		&iconID,
+		&issueGroupID,
+		&appHandle,
+		&iconHandle,
+	)
 
 	return
 }
@@ -550,7 +575,7 @@ func (s *SQLite) ApproveApp(appID string) error {
 }
 
 func (s *SQLite) PublishApp(appID string) error {
-	app, ghID, iconID, issueGroupID, _, err := s.GetSubmittedAppInfo(appID)
+	app, ghID, iconID, issueGroupID, _, _, err := s.GetSubmittedAppInfo(appID)
 	if err != nil {
 		return err
 	}

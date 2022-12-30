@@ -69,7 +69,7 @@ func NewApp(c *gin.Context) {
 
 	// If app already exists on disk, delete it
 	overwrite := true
-	handle, err := db.GetStagingAppInfo(m.Package, ghID)
+	appHandle, iconHandle, err := db.GetStagingAppInfo(m.Package, ghID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			overwrite = false
@@ -79,7 +79,11 @@ func NewApp(c *gin.Context) {
 		}
 	}
 	if overwrite {
-		if err := storage.DeleteApp(handle); err != nil {
+		if err := storage.DeleteApp(appHandle); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+		if err := storage.DeleteIcon(iconHandle); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}

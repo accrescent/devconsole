@@ -35,10 +35,18 @@ type DB interface {
 	GetApprovedApps() ([]App, error)
 	GetApps(ghID int64) ([]App, error)
 	GetPendingApps(reviewerGhID int64) ([]AppWithIssues, error)
-	GetStagingAppInfo(appID string, ghID int64) (fileHandle string, err error)
+	GetStagingAppInfo(appID string, ghID int64) (appHandle string, iconHandle string, err error)
 	GetSubmittedAppInfo(
 		appID string,
-	) (app App, ghID int64, iconID int, issueGroupID *int, fileHandle string, err error)
+	) (
+		app App,
+		ghID int64,
+		iconID int,
+		issueGroupID *int,
+		appHandle string,
+		iconHandle string,
+		err error,
+	)
 	GetSubmittedApps(ghID int64) ([]App, error)
 	ApproveApp(appID string) error
 	PublishApp(appID string) error

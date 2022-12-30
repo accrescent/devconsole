@@ -22,7 +22,7 @@ func ApproveUpdate(c *gin.Context) {
 		return
 	}
 
-	firstUpdate, versionName, fileHandle, issueGroupID, err := db.GetUpdateInfo(appID, versionCode)
+	firstUpdate, versionName, appHandle, issueGroupID, err := db.GetUpdateInfo(appID, versionCode)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			_ = c.AbortWithError(http.StatusNotFound, err)
@@ -43,14 +43,14 @@ func ApproveUpdate(c *gin.Context) {
 		int32(versionCode),
 		versionName,
 		quality.Update,
-		fileHandle,
+		appHandle,
 	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	// Delete local copy of update once it's published
-	if err := storage.DeleteApp(fileHandle); err != nil {
+	if err := storage.DeleteApp(appHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

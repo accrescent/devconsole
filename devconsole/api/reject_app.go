@@ -13,7 +13,7 @@ func RejectApp(c *gin.Context) {
 	storage := c.MustGet("storage").(data.FileStorage)
 	appID := c.Param("id")
 
-	_, _, _, _, handle, err := db.GetSubmittedAppInfo(appID)
+	_, _, _, _, appHandle, iconHandle, err := db.GetSubmittedAppInfo(appID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -22,7 +22,11 @@ func RejectApp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if err := storage.DeleteApp(handle); err != nil {
+	if err := storage.DeleteApp(appHandle); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if err := storage.DeleteIcon(iconHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

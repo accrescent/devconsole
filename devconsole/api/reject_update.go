@@ -19,7 +19,7 @@ func RejectUpdate(c *gin.Context) {
 		return
 	}
 
-	_, _, handle, _, err := db.GetUpdateInfo(appID, versionCode)
+	_, _, appHandle, _, err := db.GetUpdateInfo(appID, versionCode)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -28,7 +28,7 @@ func RejectUpdate(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if err := storage.DeleteApp(handle); err != nil {
+	if err := storage.DeleteApp(appHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

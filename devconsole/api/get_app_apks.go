@@ -13,12 +13,12 @@ func GetAppAPKs(c *gin.Context) {
 	storage := c.MustGet("storage").(data.FileStorage)
 	appID := c.Param("id")
 
-	_, _, _, _, handle, err := db.GetSubmittedAppInfo(appID)
+	_, _, _, _, appHandle, _, err := db.GetSubmittedAppInfo(appID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	file, size, err := storage.GetAPKSet(handle)
+	file, size, err := storage.GetAPKSet(appHandle)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return

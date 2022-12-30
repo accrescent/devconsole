@@ -16,20 +16,31 @@ func PublishApp(c *gin.Context) {
 	storage := c.MustGet("storage").(data.FileStorage)
 	appID := c.Param("id")
 
-	app, _, _, _, handle, err := db.GetSubmittedAppInfo(appID)
+	app, _, _, _, appHandle, iconHandle, err := db.GetSubmittedAppInfo(appID)
 	if err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	// Publish to repository server
-	if err := publish(c, appID, app.VersionCode, app.VersionName, quality.NewApp, handle); err != nil {
+	if err := publish(
+		c,
+		appID,
+		app.VersionCode,
+		app.VersionName,
+		quality.NewApp,
+		appHandle,
+	); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	// Delete local copy of app once it's published
-	if err := storage.DeleteApp(handle); err != nil {
+	if err := storage.DeleteApp(appHandle); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if err := storage.DeleteIcon(iconHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
