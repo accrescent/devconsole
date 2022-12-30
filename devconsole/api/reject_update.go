@@ -28,7 +28,7 @@ func RejectUpdate(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if err := storage.DeleteApp(appHandle); err != nil {
+	if err := storage.DeleteFile(appHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

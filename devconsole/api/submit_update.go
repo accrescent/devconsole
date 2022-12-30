@@ -53,7 +53,7 @@ func SubmitUpdate(c *gin.Context) {
 		}
 
 		// Delete update locally after publishing
-		if err := storage.DeleteApp(fileHandle); err != nil {
+		if err := storage.DeleteFile(fileHandle); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}

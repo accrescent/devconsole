@@ -81,10 +81,6 @@ func (s *LocalStorage) GetAPKSet(apkSetHandle string) (file io.Reader, size int6
 	return apkSet, apkSetInfo.Size(), nil
 }
 
-func (s *LocalStorage) DeleteApp(handle string) error {
-	return os.Remove(handle)
-}
-
-func (s *LocalStorage) DeleteIcon(handle string) error {
+func (s *LocalStorage) DeleteFile(handle string) error {
 	return os.Remove(handle)
 }

@@ -50,7 +50,7 @@ func ApproveUpdate(c *gin.Context) {
 	}
 
 	// Delete local copy of update once it's published
-	if err := storage.DeleteApp(appHandle); err != nil {
+	if err := storage.DeleteFile(appHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

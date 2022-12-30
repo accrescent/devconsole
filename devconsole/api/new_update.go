@@ -84,7 +84,7 @@ func NewUpdate(c *gin.Context) {
 		}
 	}
 	if overwrite {
-		if err := storage.DeleteApp(appHandle); err != nil {
+		if err := storage.DeleteFile(appHandle); err != nil {
 			_ = c.AbortWithError(http.StatusInternalServerError, err)
 			return
 		}

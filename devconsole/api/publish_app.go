@@ -36,11 +36,11 @@ func PublishApp(c *gin.Context) {
 	}
 
 	// Delete local copy of app once it's published
-	if err := storage.DeleteApp(appHandle); err != nil {
+	if err := storage.DeleteFile(appHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if err := storage.DeleteIcon(iconHandle); err != nil {
+	if err := storage.DeleteFile(iconHandle); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
