@@ -53,8 +53,8 @@ func NewUpdate(c *gin.Context) {
 	if m.Package != appID {
 		msg := fmt.Sprintf(
 			"App ID '%s' doesn't match expected value '%s'",
-			appID,
 			m.Package,
+			appID,
 		)
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": msg})
 		return
