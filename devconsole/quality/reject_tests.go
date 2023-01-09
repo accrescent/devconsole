@@ -3,6 +3,7 @@ package quality
 import (
 	"errors"
 	"fmt"
+	"path"
 
 	"github.com/accrescent/apkstat"
 	"golang.org/x/mod/semver"
@@ -11,6 +12,13 @@ import (
 )
 
 func RunRejectTests(metadata *pb.BuildApksResult, apk *apk.APK, uploadType UploadType) error {
+	manifest := apk.Manifest()
+
+	// Version name (for later URL path construction)
+	if "/"+manifest.VersionName != path.Clean("/"+manifest.VersionName) {
+		return errors.New("invalid version name")
+	}
+
 	// Bundletool version used to generate APK set
 	bundletoolVersion := metadata.GetBundletool().GetVersion()
 	if semver.Compare("v"+bundletoolVersion, "v"+MIN_BUNDLETOOL_VERSION) == -1 {
@@ -21,7 +29,6 @@ func RunRejectTests(metadata *pb.BuildApksResult, apk *apk.APK, uploadType Uploa
 		)
 	}
 
-	manifest := apk.Manifest()
 	targetSDK := manifest.UsesSDK.TargetSDKVersion
 
 	// Target SDK
