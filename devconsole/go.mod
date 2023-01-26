@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/google/go-github/v50 v50.0.0
 	github.com/mattn/go-sqlite3 v1.14.16
-	golang.org/x/exp v0.0.0-20221208152030-732eee02a75a
+	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e
 	golang.org/x/mod v0.7.0
 	golang.org/x/oauth2 v0.3.0
 	google.golang.org/protobuf v1.28.1
