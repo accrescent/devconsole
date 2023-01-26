@@ -22,6 +22,7 @@ var permissionReviewBlacklist = []string{
 	"android.permission.RECEIVE_MMS",
 	"android.permission.RECEIVE_SMS",
 	"android.permission.RECEIVE_WAP_PUSH",
+	"android.permission.RECORD_AUDIO",
 	"android.permission.REQUEST_INSTALL_PACKAGES",
 	"android.permission.SEND_SMS",
 	"android.permission.WRITE_CALL_LOG",
