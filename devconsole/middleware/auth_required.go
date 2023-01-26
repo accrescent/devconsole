@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v50/github"
 	"golang.org/x/oauth2"
 
 	"github.com/accrescent/devconsole/auth"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/google/go-github/v49/github"
+	"github.com/google/go-github/v50/github"
 )
 
 // GitHub's noreply email format is documented at
