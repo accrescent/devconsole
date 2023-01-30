@@ -27,6 +27,7 @@ var permissionReviewBlacklist = []string{
 	"android.permission.SEND_SMS",
 	"android.permission.WRITE_CALL_LOG",
 	"android.permission.WRITE_CONTACTS",
+	"android.permission.SYSTEM_ALERT_WINDOW",
 }
 
 var serviceIntentFilterActions = []string{
