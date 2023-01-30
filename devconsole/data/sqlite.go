@@ -905,6 +905,7 @@ func (s *SQLite) GetStagingUpdateInfo(
 			FROM staging_updates
 			JOIN issues
 			ON issues.issue_group_id = staging_updates.issue_group_id
+			AND app_id = ?
 			WHERE issues.id NOT IN (
 				SELECT issues.id
 				FROM published_apps
@@ -915,6 +916,7 @@ func (s *SQLite) GetStagingUpdateInfo(
 		)
 		FROM staging_updates
 		WHERE app_id = ? AND version_code = ? AND user_gh_id = ?`,
+		appID,
 		appID,
 		appID,
 		versionCode,
