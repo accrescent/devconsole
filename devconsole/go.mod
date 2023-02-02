@@ -1,6 +1,6 @@
 module github.com/accrescent/devconsole
 
-go 1.19
+go 1.20
 
 require (
 	github.com/accrescent/apkstat v0.1.3
