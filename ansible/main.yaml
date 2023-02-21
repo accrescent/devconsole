@@ -77,12 +77,12 @@
         mode: 0755
     - name: Allow nginx to read static web files
       community.general.sefcontext:
-        target: '/srv/staging.dev.accrescent.app(/.*)?'
+        target: '/srv/{{ inventory_hostname }}(/.*)?'
         setype: httpd_sys_content_t
     - name: Install static web files
       ansible.builtin.copy:
         src: ./dist/web/
-        dest: /srv/staging.dev.accrescent.app/
+        dest: '/srv/{{ inventory_hostname }}/'
     - name: Create application data directory
       ansible.builtin.file:
         path: /var/lib/devconsole
@@ -118,18 +118,18 @@
         mode: 0755
     - name: Allow nginx to read static files
       community.general.sefcontext:
-        target: '/srv/staging.store.accrescent.app(/.*)?'
+        target: '/srv/{{ inventory_hostname }}(/.*)?'
         setype: httpd_sys_content_t
     - name: Create static file directory
       ansible.builtin.file:
-        path: /srv/staging.store.accrescent.app
+        path: '/srv/{{ inventory_hostname }}'
         state: directory
         owner: reposerver
         group: reposerver
         mode: 0755
     - name: Install systemd service
-      ansible.builtin.copy:
-        src: ./reposerver.service
+      ansible.builtin.template:
+        src: reposerver.service.j2
         dest: /usr/lib/systemd/system/reposerver.service
     - name: Enable and start systemd service
       ansible.builtin.systemd:
@@ -161,8 +161,8 @@
   become: yes
   tasks:
     - name: Install root config
-      ansible.builtin.copy:
-        src: nginx/devconsole.conf
+      ansible.builtin.template:
+        src: nginx/devconsole.conf.j2
         dest: /etc/nginx/nginx.conf
     - name: Install security config
       ansible.builtin.copy:
@@ -178,8 +178,8 @@
   become: yes
   tasks:
     - name: Install root config
-      ansible.builtin.copy:
-        src: nginx/reposerver.conf
+      ansible.builtin.template:
+        src: nginx/reposerver.conf.j2
         dest: /etc/nginx/nginx.conf
     - name: Install security config
       ansible.builtin.copy:

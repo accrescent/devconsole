@@ -35,8 +35,8 @@ http {
     ssl_prefer_server_ciphers on;
     ssl_conf_command Options PrioritizeChaCha;
 
-    ssl_certificate /etc/letsencrypt/live/staging.dev.accrescent.app/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/staging.dev.accrescent.app/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/{{ inventory_hostname }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ inventory_hostname }}/privkey.pem;
 
     ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 1d;
@@ -64,7 +64,7 @@ http {
     server {
         listen 80;
         listen [::]:80;
-        server_name staging.dev.accrescent.app;
+        server_name {{ inventory_hostname }};
 
         root /var/empty;
 
@@ -74,9 +74,9 @@ http {
     server {
         listen 443 ssl http2;
         listen [::]:443 ssl http2;
-        server_name staging.dev.accrescent.app;
+        server_name {{ inventory_hostname }};
 
-        root /srv/staging.dev.accrescent.app;
+        root /srv/{{ inventory_hostname }};
 
         include security.conf;
         add_header Content-Security-Policy "default-src 'self'; font-src https://fonts.gstatic.com; img-src 'self' data:; style-src 'self' 'unsafe-inline'; frame-ancestors 'none'; sandbox allow-downloads allow-forms allow-same-origin allow-scripts; base-uri 'self'; trusted-types angular; require-trusted-types-for 'script';" always;
