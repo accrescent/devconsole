@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/accrescent/apkstat v0.1.3
-	github.com/gin-gonic/gin v1.8.2
+	github.com/gin-gonic/gin v1.9.0
 	github.com/google/go-github/v50 v50.0.0
 	github.com/mattn/go-sqlite3 v1.14.16
 	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e
