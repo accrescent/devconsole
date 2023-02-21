@@ -1,0 +1,49 @@
+---
+- name: Upgrade devconsole
+  hosts: consoles
+  become: yes
+  gather_facts: no
+  tags: console
+  tasks:
+    - name: Upgrade application
+      ansible.builtin.copy:
+        src: ./devconsole
+        dest: /opt/devconsole/
+        mode: 0755
+    - name: Upgrade static web files
+      ansible.builtin.copy:
+        src: ./dist/web/
+        dest: '/srv/{{ inventory_hostname }}/'
+      tags: static
+    - name: Install systemd service
+      ansible.builtin.copy:
+        src: ./devconsole.service
+        dest: /usr/lib/systemd/system/devconsole.service
+    - name: Restart systemd service
+      ansible.builtin.systemd:
+        name: devconsole
+        daemon_reload: yes
+        enabled: yes
+        state: restarted
+
+- name: Upgrade reposerver
+  hosts: repos
+  become: yes
+  gather_facts: no
+  tags: repo
+  tasks:
+    - name: Upgrade application
+      ansible.builtin.copy:
+        src: ./reposerver
+        dest: /opt/reposerver/
+        mode: 0755
+    - name: Install systemd service
+      ansible.builtin.template:
+        src: reposerver.service.j2
+        dest: /usr/lib/systemd/system/reposerver.service
+    - name: Restart systemd service
+      ansible.builtin.systemd:
+        name: reposerver
+        daemon_reload: yes
+        enabled: yes
+        state: restarted
