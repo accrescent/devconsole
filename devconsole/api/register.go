@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/go-github/v50/github"
+	"github.com/google/go-github/v51/github"
 	"github.com/mattn/go-sqlite3"
 	"golang.org/x/exp/slices"
 
