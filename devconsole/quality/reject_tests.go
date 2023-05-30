@@ -52,6 +52,11 @@ func RunRejectTests(metadata *pb.BuildApksResult, apk *apk.APK, uploadType Uploa
 		return errors.New("android:debuggable should not be set to true")
 	}
 
+	// android:testOnly
+	if manifest.Application.TestOnly != nil && *manifest.Application.TestOnly {
+		return errors.New("android:testOnly should not be set to true")
+	}
+
 	// android:usesCleartextTraffic
 	usesCleartextTraffic := manifest.Application.UsesCleartextTraffic
 	if usesCleartextTraffic != nil && *usesCleartextTraffic {
