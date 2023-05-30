@@ -9,7 +9,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	golang.org/x/mod v0.10.0
-	golang.org/x/oauth2 v0.7.0
+	golang.org/x/oauth2 v0.8.0
 	google.golang.org/protobuf v1.30.0
 )
 
@@ -36,8 +36,8 @@ require (
 	github.com/ugorji/go/codec v1.2.10 // indirect
 	golang.org/x/arch v0.2.0 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
-	golang.org/x/net v0.9.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
