@@ -3,7 +3,7 @@ module github.com/accrescent/devconsole
 go 1.20
 
 require (
-	github.com/accrescent/apkstat v0.1.3
+	github.com/accrescent/apkstat v0.1.4
 	github.com/gin-gonic/gin v1.9.0
 	github.com/google/go-github/v52 v52.0.0
 	github.com/mattn/go-sqlite3 v1.14.16
