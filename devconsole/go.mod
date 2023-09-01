@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v52 v52.0.0
 	github.com/mattn/go-sqlite3 v1.14.17
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
-	golang.org/x/mod v0.10.0
+	golang.org/x/mod v0.12.0
 	golang.org/x/oauth2 v0.8.0
 	google.golang.org/protobuf v1.30.0
 )
