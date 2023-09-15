@@ -67,7 +67,12 @@ func NewUpdate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err})
 		return
 	}
-	if err := quality.RunRejectTests(metadata, apk, quality.Update); err != nil {
+	sdkException, err := db.GetSdkException(m.Package)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if err := quality.RunRejectTests(metadata, apk, sdkException, quality.Update); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}

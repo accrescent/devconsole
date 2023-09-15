@@ -8,10 +8,16 @@ import (
 	"github.com/accrescent/apkstat"
 	"golang.org/x/mod/semver"
 
+	"github.com/accrescent/devconsole/data"
 	pb "github.com/accrescent/devconsole/pb"
 )
 
-func RunRejectTests(metadata *pb.BuildApksResult, apk *apk.APK, uploadType UploadType) error {
+func RunRejectTests(
+	metadata *pb.BuildApksResult,
+	apk *apk.APK,
+	sdkException *data.SdkException,
+	uploadType UploadType,
+) error {
 	manifest := apk.Manifest()
 
 	// Version name (for later URL path construction)
@@ -40,11 +46,16 @@ func RunRejectTests(metadata *pb.BuildApksResult, apk *apk.APK, uploadType Uploa
 			"App target SDK is %d but the minimum is %d",
 			*targetSDK, MIN_TARGET_SDK_NEW_APP,
 		)
-	case uploadType == Update && *targetSDK < MIN_TARGET_SDK_UPDATE:
-		return fmt.Errorf(
-			"App target SDK is %d but the minimum is %d",
-			*targetSDK, MIN_TARGET_SDK_UPDATE,
-		)
+	case uploadType == Update:
+		switch {
+		case sdkException != nil && *targetSDK >= sdkException.MinTargetSdk:
+			break
+		case *targetSDK < MIN_TARGET_SDK_UPDATE:
+			return fmt.Errorf(
+				"App target SDK is %d but the minimum is %d",
+				*targetSDK, MIN_TARGET_SDK_UPDATE,
+			)
+		}
 	}
 
 	// android:debuggable

@@ -59,13 +59,18 @@ func NewApp(c *gin.Context) {
 		return
 	}
 
+	m := apk.Manifest()
+
 	// Run tests whose failures warrant immediate rejection
-	if err := quality.RunRejectTests(metadata, apk, quality.NewApp); err != nil {
+	sdkException, err := db.GetSdkException(m.Package)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	if err := quality.RunRejectTests(metadata, apk, sdkException, quality.NewApp); err != nil {
 		c.AbortWithStatusJSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
-
-	m := apk.Manifest()
 
 	// If app already exists on disk, delete it
 	overwrite := true

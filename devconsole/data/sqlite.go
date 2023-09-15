@@ -177,6 +177,18 @@ func (s *SQLite) Initialize() error {
 			return err
 		}
 	}
+	if userVersion < 3 {
+		if _, err := s.db.Exec(`CREATE TABLE sdk_exceptions (
+			app_id TEXT PRIMARY KEY,
+			min_target_sdk INT NOT NULL
+		) STRICT`); err != nil {
+			return err
+		}
+
+		if _, err := s.db.Exec("PRAGMA user_version = 3"); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -1030,4 +1042,16 @@ func (s *SQLite) DeleteSubmittedUpdate(appID string, versionCode int) error {
 	)
 
 	return err
+}
+
+func (s *SQLite) GetSdkException(appID string) (*SdkException, error) {
+	sdkException := new(SdkException)
+	if err := s.db.QueryRow(
+		"SELECT min_target_sdk FROM sdk_exceptions WHERE app_id = ?",
+		appID,
+	).Scan(&sdkException.MinTargetSdk); err != nil {
+		return nil, err
+	}
+
+	return sdkException, nil
 }

@@ -75,4 +75,6 @@ type DB interface {
 	ApproveUpdate(appID string, versionCode int, versionName string, issueGroupID *int) error
 	SubmitUpdate(app App, fileHandle string, issueGroupID *int, needsReview bool) error
 	DeleteSubmittedUpdate(appID string, versionCode int) error
+
+	GetSdkException(appID string) (*SdkException, error)
 }
