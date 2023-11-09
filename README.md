@@ -1,4 +1,7 @@
-# Accrescent Developer Console
+# (Old) Accrescent Developer Console
+
+**NOTE: This project is no longer maintained. If you're looking for Accrescent's
+current developer console, see https://github.com/accrescent/parcelo.**
 
 The Accrescent developer console - a web application for developers to upload
 and manage their apps in the Accrescent app store.
